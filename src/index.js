@@ -18,8 +18,7 @@ Model.knex(knex);
 const app = express();
 app.use(express.json());
 
-// Usar o middleware para validar a API Key em todas as rotas
-app.use(validarApiKey); // Validação da API Key para todas as rotas
+app.use(validarApiKey);
 
 app.use('/', routes);
 app.use(errorHandler);
@@ -36,10 +35,8 @@ app.listen(PORT, () => {
 
 async function iniciarAgendador() {
   try {
-    // Atualiza as agendas imediatamente quando o servidor iniciar
     await atualizarAgendas();
 
-    // Configura o cron para chamar a função de atualização das agendas a cada intervalo definido
     cron.schedule(`*/${AGENDA_UPDATE_INTERVAL_MINUTES} * * * *`, atualizarAgendas);
   } catch (error) {
     console.error('Erro ao configurar agendadores:', error);
@@ -56,10 +53,10 @@ async function atualizarAgendas() {
       const [hora, minuto] = horario.split(':');
       const cronExpression = `${minuto} ${hora} * * *`;
       console.log('Cron: ' + cronExpression);
-      
+
       if (cronTasks.has(agenda.AgendaId)) {
         console.log('agenda: ' + agenda);
-        
+
         cronTasks.get(agenda.AgendaId).stop();
         cronTasks.delete(agenda.AgendaId);
       }
@@ -67,7 +64,6 @@ async function atualizarAgendas() {
       const task = cron.schedule(cronExpression, async () => {
         console.log(`Executando sincronização para agenda ID: ${agenda.AgendaId}`);
         try {
-          // Chama a função de sincronização passando a agenda como parâmetro
           await realizarSincronizacao(agenda);
         } catch (error) {
           console.error(`Erro ao sincronizar agenda ID: ${agenda.AgendaId}`, error);
