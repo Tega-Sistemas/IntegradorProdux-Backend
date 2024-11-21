@@ -1,4 +1,4 @@
-import { sincronizarEmpresa } from './sincronizacaoEmpresa.js';
+import { sincronizarEmpresa } from './produxIntegracaoService/sincronizacaoEmpresa.js';
 import { logInfo, logSucesso, logErro } from './logService.js';
 
 async function realizarSincronizacao() {
@@ -16,6 +16,7 @@ async function realizarSincronizacao() {
         }
 
         if (!isError) {
+            logSucesso('Sincronização realizada com sucesso')
             return { status: 'success', message: 'Sincronização realizada com sucesso' };
         }
 

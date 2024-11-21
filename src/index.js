@@ -8,7 +8,7 @@ import routes from './routes/index.js';
 import errorHandler from './middlewares/errorHandler.js';
 import Agenda from './models/Agenda.js';
 import { realizarSincronizacao } from './services/sincronizacaoService.js';
-import { validarApiKey } from './middlewares/validarApiKey.js'; // Importando o middleware
+import { validarApiKey } from './middlewares/validarApiKey.js';
 
 dotenv.config();
 
@@ -21,6 +21,7 @@ app.use(express.json());
 app.use(validarApiKey);
 
 app.use('/', routes);
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
@@ -52,11 +53,8 @@ async function atualizarAgendas() {
       const horario = agenda.Horario;
       const [hora, minuto] = horario.split(':');
       const cronExpression = `${minuto} ${hora} * * *`;
-      console.log('Cron: ' + cronExpression);
 
       if (cronTasks.has(agenda.AgendaId)) {
-        console.log('agenda: ' + agenda);
-
         cronTasks.get(agenda.AgendaId).stop();
         cronTasks.delete(agenda.AgendaId);
       }

@@ -1,7 +1,7 @@
 import axios from 'axios';
-import ConfiguracaoIntegracao from '../models/ConfiguracaoIntegracao.js';
-import Empresa from '../models/Empresa.js';
-import { logErro } from './logService.js';
+import ConfiguracaoIntegracao from '../../models/ConfiguracaoIntegracao.js';
+import Empresa from '../../models/Empresa.js';
+import { logErro } from '../logService.js';
 
 async function sincronizarEmpresa() {
 
