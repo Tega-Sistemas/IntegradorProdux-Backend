@@ -3,7 +3,7 @@ import ConfiguracaoIntegracao from '../../models/ConfiguracaoIntegracao.js';
 import Empresa from '../../models/Empresa.js';
 import { logErro } from '../logService.js';
 
-async function sincronizarEmpresa() {
+async function sincronizar() {
 
     const syncName = 'empresa'
     var data;
@@ -12,7 +12,7 @@ async function sincronizarEmpresa() {
         const configuracao = await ConfiguracaoIntegracao.query().where('tipo_integracao', 1);
         const token = process.env.PRODUX_TOKEN;
         var urlExterna;
-        console.log(configuracao.length);
+
         if (configuracao.length > 0) {
             configuracao.forEach(item => {
                 urlExterna = `${item.tipo_conexao}://${item.ip}:${item.porta}/${item.nome_aplicacao}/Api/IntegracaoProdux/empresas`;
@@ -23,10 +23,16 @@ async function sincronizarEmpresa() {
             return { status: 'error', message: log };
         }
 
-        const empresas = await Empresa.query().select('EmpresaId', 'EmpresaNome', 'EmpresaCNPJ', 'EmpresaNomeInterno', 'EmpresaNomeFantasia');
+        if (urlExterna === '') {
+            let log = 'Ocorreu um erro ao montar a URL da API'
+            logErro(`<p>${log}</p>`);
+            return { status: 'error', message: log };
+        }
+
+        const select = await Empresa.query().select('EmpresaId', 'EmpresaNome', 'EmpresaCNPJ', 'EmpresaNomeInterno', 'EmpresaNomeFantasia');
 
         data = {
-            "Empresa": empresas
+            "Empresa": select
         };
 
         await axios.post(urlExterna, data, {
@@ -36,7 +42,7 @@ async function sincronizarEmpresa() {
             }
         });
 
-        return { status: 'success', message: 'Sincronização de empresas concluída' };
+        return { status: 'success', message: `Sincronização de ${syncName} concluída` };
     } catch (error) {
         if (error.response) {
             const erroResponse = {
@@ -62,4 +68,4 @@ async function sincronizarEmpresa() {
     }
 }
 
-export { sincronizarEmpresa };
+export { sincronizar };

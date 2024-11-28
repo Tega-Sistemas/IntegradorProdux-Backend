@@ -1,6 +1,5 @@
 import Agenda from "../models/Agenda.js";
 
-// Listar todas as agendas
 export const listarAgendas = async (req, res) => {
   try {
     const agendas = await Agenda.query();
@@ -10,7 +9,6 @@ export const listarAgendas = async (req, res) => {
   }
 };
 
-// Criar uma nova agenda
 export const criarAgenda = async (req, res) => {
   try {
     const { Horario, Tipo, UsuarioCriacao, UsuarioAlteracao } = req.body;
@@ -32,7 +30,6 @@ export const criarAgenda = async (req, res) => {
   }
 };
 
-// Atualizar uma agenda
 export const atualizarAgenda = async (req, res) => {
   const { id } = req.params;
   const { Horario, Tipo, UsuarioAlteracao } = req.body;
@@ -57,7 +54,6 @@ export const atualizarAgenda = async (req, res) => {
   }
 };
 
-// Deletar uma agenda
 export const deletarAgenda = async (req, res) => {
   const { id } = req.params;
 

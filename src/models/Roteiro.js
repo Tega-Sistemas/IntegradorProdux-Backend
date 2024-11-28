@@ -15,6 +15,7 @@ class Roteiro extends Model {
             required: ["RoteiroId", "SetorId", "EquipamentoId", "OperacoesCEPPId", "MedidaPeca", "OrdemDoSetor"],
             properties: {
                 RoteiroId: { type: "number" },
+                PecaCodigo: { type: "string" },
                 SetorId: { type: "number" },
                 EquipamentoId: { type: "number" },
                 OperacoesCEPPId: { type: "number" },

@@ -4,7 +4,7 @@
  */
 export const up = function (knex) {
   return knex.schema.createTable('setor', (table) => {
-    table.increments('SetorId').primary();
+    table.integer('SetorId', 19).notNullable().primary();
     table.string('SetorDescricao', 50).notNullable();
     table.date('SetorDtInclusao').notNullable();
     table.string('SetorDescricaoAbreviacao', 50).notNullable();

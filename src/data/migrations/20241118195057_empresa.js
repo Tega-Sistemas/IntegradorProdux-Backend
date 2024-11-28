@@ -4,7 +4,7 @@
  */
 export const up = function (knex) {
     return knex.schema.createTable('empresa', (table) => {
-        table.increments('EmpresaId').primary();
+        table.integer('EmpresaId', 19).notNullable().primary();
         table.string('EmpresaNome', 50).notNullable();
         table.string('EmpresaCNPJ', 50).notNullable();
         table.string('EmpresaNomeInterno', 50).notNullable();

@@ -4,19 +4,9 @@
  */
 export function up(knex) {
   return knex.schema.createTable("equipamentooperacoes", (table) => {
-    table.integer("EquipamentoId").unsigned().notNullable();
-    table.integer("OperacoesId").unsigned().notNullable();
+    table.integer('EquipamentoId', 19).notNullable().references('EquipamentoId').inTable('equipamento');
+    table.integer('OperacoesId', 19).notNullable().references('OperacoesId').inTable('operacoes');
     table.primary(["EquipamentoId", "OperacoesId"]);
-
-    table
-      .foreign("EquipamentoId")
-      .references("EquipamentoId")
-      .inTable("equipamento");
-
-    table
-      .foreign("OperacoesId")
-      .references("OperacoesId")
-      .inTable("operacoes");
   });
 }
 

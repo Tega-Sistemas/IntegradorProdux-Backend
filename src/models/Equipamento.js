@@ -1,19 +1,16 @@
 import { Model } from 'objection';
-import Setor from './Setor.js';  // Importando o model Setor
-import Empresa from './Empresa.js';  // Importando o model Empresa
+import Setor from './Setor.js';
+import Empresa from './Empresa.js';
+import Operacoes from './Operacoes.js';
 
 class Equipamento extends Model {
-    // Define o nome da tabela no banco de dados
     static tableName = 'equipamento';
-
-    // Define qual coluna será usada como chave primária
     static idColumn = 'EquipamentoId';
 
     static get jsonSchema() {
         return {
             type: 'object',
             required: ['EquipamentoDescricao', 'EquipamentoNroFuncionarios', 'UnidadeSigla'],
-
             properties: {
                 EquipamentoId: { type: 'integer' },
                 EquipamentoDescricao: { type: 'string', maxLength: 50 },
@@ -46,15 +43,34 @@ class Equipamento extends Model {
                     to: 'empresa.EmpresaId',
                 },
             },
+            operacoes: {
+                relation: Model.ManyToManyRelation,
+                modelClass: Operacoes,
+                join: {
+                    from: 'equipamento.EquipamentoId',
+                    through: {
+                        from: 'equipamentooperacoes.EquipamentoId',
+                        to: 'equipamentooperacoes.OperacoesId',
+                    },
+                    to: 'operacoes.OperacoesId',
+                },
+            },
         };
     }
 
     $beforeUpdate() {
-        // Convertendo para o formato 'YYYY-MM-DD HH:MM:SS' que o MySQL espera
         const date = new Date();
-        this.updated_at = date.toISOString().slice(0, 19).replace('T', ' '); // Converte para 'YYYY-MM-DD HH:MM:SS'
+        this.updated_at = date.toISOString().slice(0, 19).replace('T', ' ');
     }
 
+    $formatJson(json) {
+        const formattedJson = super.$formatJson(json);
+        if (formattedJson.operacoes) {
+            formattedJson.Operacoes = formattedJson.operacoes;
+            delete formattedJson.operacoes; // Remove o campo original
+        }
+        return formattedJson;
+    }
 }
 
 export default Equipamento;

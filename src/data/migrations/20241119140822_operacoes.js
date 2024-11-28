@@ -4,7 +4,7 @@
  */
 export function up(knex) {
   return knex.schema.createTable("operacoes", (table) => {
-    table.increments("OperacoesId").primary();
+    table.integer("OperacoesId", 19).primary();
     table.string("OperacoesCEPPDescricao", 50).nullable();
     table.integer("EquipamentoOperacaoCicloPadrao").nullable();
     table.timestamps(true, true);

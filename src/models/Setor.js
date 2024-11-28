@@ -22,10 +22,19 @@ class Setor extends Model {
             },
         };
     }
-    
+
     $beforeUpdate() {
         const date = new Date();
         this.updated_at = date.toISOString().slice(0, 19).replace('T', ' '); // Converte para 'YYYY-MM-DD HH:MM:SS'
+    }
+
+    $formatJson(json) {
+        const formattedJson = super.$formatJson(json);
+        if (formattedJson.SetorDescricaoAbreviacao) {
+            formattedJson.SetorDescricaoAbreviada = formattedJson.SetorDescricaoAbreviacao;
+            delete formattedJson.SetorDescricaoAbreviacao;
+        }
+        return formattedJson;
     }
 }
 

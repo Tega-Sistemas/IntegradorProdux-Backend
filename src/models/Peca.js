@@ -1,4 +1,5 @@
 import { Model } from "objection";
+import Roteiro from './Roteiro.js';
 
 class Peca extends Model {
     // Define o nome da tabela no banco de dados
@@ -19,6 +20,19 @@ class Peca extends Model {
                 PecaIntegracaoId: { type: "number" },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
+            },
+        };
+    }
+
+    static get relationMappings() {
+        return {
+            Roteiro: {
+                relation: Model.HasManyRelation,
+                modelClass: Roteiro,
+                join: {
+                    from: 'peca.PecaCodigo',
+                    to: 'roteiro.PecaCodigo',
+                },
             },
         };
     }

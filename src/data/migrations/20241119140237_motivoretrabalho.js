@@ -4,7 +4,7 @@
  */
 export function up(knex) {
   return knex.schema.createTable("motivoretrabalho", (table) => {
-    table.increments("MotivoRetrabalhoId").primary(); // Chave primária auto incrementada
+    table.integer("MotivoRetrabalhoId", 19).primary(); // Chave primária auto incrementada
     table.string("MotivoRetrabalhoDescricao", 50).notNullable(); // Campo obrigatório
     table.timestamps(true, true);
   });

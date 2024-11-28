@@ -2,22 +2,12 @@ import Empresa from '../models/Empresa.js';
 
 export const listarEmpresas = async (req, res) => {
     try {
-        const empresas = await Empresa.query(); // Aqui você busca as empresas do banco
-        return empresas; // Retorna as empresas em vez de tentar responder a uma requisição HTTP
+        const empresas = await Empresa.query();
+        res.json(empresas);
     } catch (err) {
-        console.error('Erro ao listar empresas:', err);
-        throw new Error('Erro ao listar empresas');
+        res.status(500).json({ error: err.message });
     }
-}
-
-// export const listarEmpresas = async (req, res) => {
-//     try {
-//         const empresas = await Empresa.query();
-//         res.json(empresas);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+};
 
 export const criarEmpresa = async (req, res) => {
     const { EmpresaNome, EmpresaCNPJ, EmpresaNomeInterno, EmpresaNomeFantasia } = req.body;

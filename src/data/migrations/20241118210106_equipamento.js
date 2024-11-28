@@ -4,12 +4,12 @@
  */
 export const up = function (knex) {
   return knex.schema.createTable('equipamento', (table) => {
-    table.increments('EquipamentoId').primary();
+    table.integer('EquipamentoId', 19).primary();
     table.string('EquipamentoDescricao', 50).notNullable();
     table.integer('EquipamentoNroFuncionarios').notNullable();
     table.string('UnidadeSigla', 3).notNullable();
-    table.integer('SetorId').unsigned().nullable().references('SetorId').inTable('setor');
-    table.integer('EmpresaId').unsigned().nullable().references('EmpresaId').inTable('empresa');
+    table.integer('SetorId', 19).notNullable().references('SetorId').inTable('setor');
+    table.integer('EmpresaId', 19).notNullable().references('EmpresaId').inTable('empresa');
     table.timestamps(true, true);
   });
 };
