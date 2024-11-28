@@ -1,4 +1,4 @@
-import { v4 as uuidv4, v4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import Log from '../models/Log.js';
 
 async function registrarLog(level, message) {

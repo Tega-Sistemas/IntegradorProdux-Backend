@@ -67,7 +67,7 @@ class Equipamento extends Model {
         const formattedJson = super.$formatJson(json);
         if (formattedJson.operacoes) {
             formattedJson.Operacoes = formattedJson.operacoes;
-            delete formattedJson.operacoes; // Remove o campo original
+            delete formattedJson.operacoes;
         }
         return formattedJson;
     }

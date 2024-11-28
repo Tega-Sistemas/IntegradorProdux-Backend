@@ -1,3 +1,4 @@
+import { v4 as uuidv4, v4 } from 'uuid';
 import Log from '../models/Log.js';
 
 export const listarLogs = async (req, res) => {
@@ -22,6 +23,33 @@ export const listarLogs = async (req, res) => {
         res.status(200).json(logs);
     } catch (error) {
         res.status(500).json({ message: 'Erro ao listar logs', error });
+    }
+};
+
+export const criarLog = async (req, res) => {
+
+    const { level, message } = req.body;
+
+    try {
+        if (["SUCCESS", "INFO", "ERROR"].includes(level)) {
+            let uuid = uuidv4();
+
+            await Log.query().insert({
+                id: uuid,
+                level,
+                message
+            });
+
+            console.log(`[${level}] ${message}`);
+
+            console.log(Log);
+            console.log(JSON.stringify(Log, null, 2));
+            res.status(200).json(Log);
+        } else {
+            res.status(400).json({ message: 'Level de log inválido (SUCCESS, INFO, ERROR)' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao buscar log', error });
     }
 };
 

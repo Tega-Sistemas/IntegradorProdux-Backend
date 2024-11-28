@@ -22,9 +22,8 @@ class Log extends Model {
         };
     }
 
-    // Método para gerar o UUID automaticamente antes de inserir
     async $beforeInsert(queryContext) {
-        this.id = uuidv4();  // Gera o UUID antes de inserir
+        this.id = uuidv4();
     }
 }
 

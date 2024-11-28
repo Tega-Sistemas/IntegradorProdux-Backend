@@ -36,7 +36,7 @@ async function sincronizar() {
             return { status: 'info', message: log };
         }
 
-        const totalBatches = 1; //Math.ceil(totalCount / batchSize);
+        const totalBatches = Math.ceil(totalCount / batchSize);
 
         for (let i = 0; i < totalBatches; i++) {
             const offset = i * batchSize;

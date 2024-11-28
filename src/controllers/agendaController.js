@@ -1,8 +1,18 @@
 import Agenda from "../models/Agenda.js";
+import Log from "../models/Log.js";
 
 export const listarAgendas = async (req, res) => {
   try {
-    const agendas = await Agenda.query();
+    const { tipo } = req.query;
+
+    let agendas;
+
+    if (tipo > 0) {
+      agendas = await Agenda.query().where('tipo', tipo);
+    } else {
+      agendas = await Agenda.query();
+    }
+
     res.status(200).json(agendas);
   } catch (error) {
     res.status(500).json({ error: "Erro ao listar as agendas." });
