@@ -40,10 +40,6 @@ export const criarLog = async (req, res) => {
                 message
             });
 
-            console.log(`[${level}] ${message}`);
-
-            console.log(Log);
-            console.log(JSON.stringify(Log, null, 2));
             res.status(200).json(Log);
         } else {
             res.status(400).json({ message: 'Level de log inválido (SUCCESS, INFO, ERROR)' });
