@@ -5,7 +5,7 @@ import { sincronizar as sincronizacaoMotivoParada } from './produxIntegracaoServ
 import { sincronizar as sincronizacaoMotivoRetrabalho } from './produxIntegracaoService/sincronizacaoMotivoRetrabalho.js';
 import { sincronizar as sincronizacaoOrdemProducao } from './produxIntegracaoService/sincronizacaoOrdemProducao.js';
 import { sincronizar as sincronizacaoPeca } from './produxIntegracaoService/sincronizacaoPeca.js';
-import { logInfo, logSucesso, logErro } from './logService.js';
+import { logInfo, logSucesso } from './logService.js';
 
 async function realizarSincronizacao() {
     try {
