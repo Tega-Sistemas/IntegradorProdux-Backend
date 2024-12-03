@@ -32,10 +32,7 @@ async function sincronizar() {
         const select = await Equipamento
             .query()
             .select('EquipamentoId', 'EquipamentoDescricao', 'EquipamentoNroFuncionarios', 'UnidadeSigla', 'SetorId', 'EmpresaId')
-            .withGraphFetched('operacoes')
-            .modifyGraph('operacoes', (builder) => {
-                builder.select('operacoes.OperacoesCEPPDescricao', 'operacoes.EquipamentoOperacaoCicloPadrao');
-            });
+            .withGraphFetched('operacoes');
 
         data = {
             "Equipamento": select

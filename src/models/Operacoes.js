@@ -22,7 +22,7 @@ class Operacoes extends Model {
 
     $beforeUpdate() {
         const date = new Date();
-        this.updated_at = date.toISOString().slice(0, 19).replace('T', ' '); // Converte para 'YYYY-MM-DD HH:MM:SS'
+        this.updated_at = date.toISOString().slice(0, 19).replace('T', ' ');
     }
 }
 

@@ -12,7 +12,7 @@ async function realizarSincronizacao() {
         let isError = false;
         let log = '';
 
-        logInfo('Iniciando sincronização dos dados...');
+        logInfo('<p>Iniciando sincronização dos dados...</p>');
 
         const resultadoEmpresa = await sincronizarEmpresa();
 

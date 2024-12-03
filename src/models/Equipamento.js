@@ -24,7 +24,6 @@ class Equipamento extends Model {
         };
     }
 
-    // Relacionamentos
     static get relationMappings() {
         return {
             setor: {
@@ -71,6 +70,24 @@ class Equipamento extends Model {
         }
         return formattedJson;
     }
+
+    $formatJson(json) {
+        const formattedJson = super.$formatJson(json);
+    
+        if (formattedJson.operacoes) {
+            formattedJson.Operacoes = formattedJson.operacoes.map(op => {
+                if (op.OperacoesId) {
+                    op.OperacoesCEPPId = op.OperacoesId;
+                    delete op.OperacoesId;
+                }
+                return op;
+            });
+            delete formattedJson.operacoes;
+        }
+    
+        return formattedJson;
+    }
+
 }
 
 export default Equipamento;
