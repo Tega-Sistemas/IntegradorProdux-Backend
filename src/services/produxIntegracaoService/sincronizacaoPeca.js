@@ -28,7 +28,7 @@ async function sincronizar() {
             return { status: 'error', message: log };
         }
 
-        const totalRecords = await Peca.query().count('PecaCodigo as total').first().where('PecaCodigo', '645');
+        const totalRecords = await Peca.query().count('PecaCodigo as total').first();
         const totalCount = totalRecords?.total || 0;
 
         if (totalCount === 0) {
@@ -43,7 +43,7 @@ async function sincronizar() {
             const offset = i * batchSize;
 
             const batch = await Peca.query()
-                .select('PecaCodigo', 'PecaDescricao', 'PecaPesoBruto', 'PecaPesoLiquido', 'PecaIntegracaoId').where('PecaCodigo', '645')
+                .select('PecaCodigo', 'PecaDescricao', 'PecaPesoBruto', 'PecaPesoLiquido', 'PecaIntegracaoId')
                 .withGraphFetched('Roteiro')
                 .modifyGraph('Roteiro', (builder) => {
                     builder.select('roteiro.SetorId', 'roteiro.EquipamentoId', 'roteiro.OperacoesCEPPId', 'roteiro.MedidaPeca');
