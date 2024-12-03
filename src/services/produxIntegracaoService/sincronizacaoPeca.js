@@ -46,7 +46,7 @@ async function sincronizar() {
                 .select('PecaCodigo', 'PecaDescricao', 'PecaPesoBruto', 'PecaPesoLiquido', 'PecaIntegracaoId')
                 .withGraphFetched('Roteiro')
                 .modifyGraph('Roteiro', (builder) => {
-                    builder.select('roteiro.SetorId', 'roteiro.EquipamentoId', 'roteiro.OperacoesCEPPId', 'roteiro.MedidaPeca');
+                    builder.select('roteiro.SetorId', 'roteiro.EquipamentoId', 'roteiro.OperacoesCEPPId', 'roteiro.MedidaPeca', 'roteiro.QtdeMinuto');
                 })
                 .limit(batchSize)
                 .offset(offset);

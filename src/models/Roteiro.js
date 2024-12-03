@@ -21,6 +21,7 @@ class Roteiro extends Model {
                 OperacoesCEPPId: { type: "number" },
                 MedidaPeca: { type: "number" },
                 OrdemDoSetor: { type: "number" },
+                QtdeMinuto: { type: "number" },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
             },
