@@ -3,6 +3,7 @@ import { Model } from 'objection';
 import Knex from 'knex';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
+import cors from 'cors';
 import knexConfig from './config/knexfile.js';
 import routes from './routes/index.js';
 import errorHandler from './middlewares/errorHandler.js';
@@ -17,7 +18,9 @@ Model.knex(knex);
 
 const app = express();
 app.use(express.json());
-
+app.use(cors({
+  origin: '*',
+}));
 app.use(validarApiKey);
 
 app.use('/', routes);

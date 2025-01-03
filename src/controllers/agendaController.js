@@ -60,7 +60,7 @@ export const atualizarAgenda = async (req, res) => {
       res.status(404).json({ error: "Agenda não encontrada." });
     }
   } catch (error) {
-    res.status(500).json({ error: "Erro ao atualizar a agenda." });
+    res.status(500).json({ error: "Erro ao atualizar a agenda.", msg: error });
   }
 };
 

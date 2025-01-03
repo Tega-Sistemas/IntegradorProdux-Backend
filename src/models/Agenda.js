@@ -32,7 +32,7 @@ class Agenda extends Model {
 
     $beforeUpdate() {
         const date = new Date();
-        this.updated_at = date.toISOString().slice(0, 19).replace('T', ' ');
+        this.AlteradoEm = date.toISOString().slice(0, 19).replace('T', ' ');
     }
 
 }
