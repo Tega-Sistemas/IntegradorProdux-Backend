@@ -13,9 +13,11 @@ import agendaRoutes from "./agendaRoutes.js";
 import configuracaoIntegracaoRoutes from "./configuracaoIntegracaoRoutes.js";
 import sincronizacaoRoutes from "./sincronizacaoRoutes.js";
 import logRoutes from "./logRoutes.js";
+import authRoutes from './authRoutes.js';
 
 const router = express.Router();
 
+router.use('/auth', authRoutes);
 router.use('/usuarios', usuarioRoutes);
 router.use('/empresas', empresaRoutes);
 router.use('/setores', setorRoutes);

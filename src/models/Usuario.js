@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { Model } from 'objection';
 
 class Usuario extends Model {
@@ -24,9 +25,18 @@ class Usuario extends Model {
         };
     }
 
-    $beforeUpdate() {
+    async $beforeUpdate() {
         const date = new Date();
         this.updated_at = date.toISOString().slice(0, 19).replace('T', ' '); // Converte para 'YYYY-MM-DD HH:MM:SS
+        if (this.senha) {
+            this.senha = await bcrypt.hash(this.senha, 10);
+        }
+    }
+
+    async $beforeInsert() {
+        if (this.senha) {
+            this.senha = await bcrypt.hash(this.senha, 10);
+        }
     }
 }
 
