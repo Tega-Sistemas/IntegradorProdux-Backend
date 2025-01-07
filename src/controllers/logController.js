@@ -8,9 +8,11 @@ export const listarLogs = async (req, res) => {
         return res.status(400).json({ message: 'As datas inicial e final são obrigatórias' });
     }
 
-    const ordemValida = ordenacao.toLowerCase() === 'asc' || ordenacao.toLowerCase() === 'desc';
-    if (ordenacao && !ordemValida) {
-        return res.status(400).json({ message: 'O parâmetro "ordenacao" deve ser "asc" (crescente) ou "desc" (decrescente)' });
+    if (ordenacao) {
+        const ordemValida = ordenacao.toLowerCase() === 'asc' || ordenacao.toLowerCase() === 'desc';
+        if (ordenacao && !ordemValida) {
+            return res.status(400).json({ message: 'O parâmetro "ordenacao" deve ser "asc" (crescente) ou "desc" (decrescente)' });
+        }
     }
 
     const ordem = ordenacao || 'desc';
