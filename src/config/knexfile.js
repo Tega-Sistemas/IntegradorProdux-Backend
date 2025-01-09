@@ -1,7 +1,4 @@
-import dotenv from 'dotenv';
-
-// Carregar variáveis de ambiente do arquivo .env
-dotenv.config();
+import 'dotenv/config'; // Carrega as variáveis de ambiente
 
 export default {
   development: {
@@ -17,5 +14,8 @@ export default {
       directory: '../data/migrations',
       stub: './knex-stub.mjs',
     },
+    seeds: {
+      directory: '../data/seed',
+    }
   },
 };

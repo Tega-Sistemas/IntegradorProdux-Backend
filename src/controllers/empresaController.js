@@ -68,7 +68,6 @@ export const deletarEmpresa = async (req, res) => {
     const { id } = req.params;
 
     try {
-        console.log(id);
         const empresa = await Empresa.query().findById(id);
 
         if (!empresa) {

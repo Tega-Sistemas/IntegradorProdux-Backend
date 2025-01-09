@@ -19,6 +19,11 @@ class Usuario extends Model {
                 email: { type: 'string', format: 'email' },
                 usuario: { type: 'string' },
                 senha: { type: 'string' },
+                role: {
+                    type: 'string',
+                    enum: ['admin', 'user'],
+                    default: 'user'
+                },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
             },

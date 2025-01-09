@@ -11,7 +11,6 @@ async function registrarLog(level, message) {
             message
         });
 
-        console.log(`[${level}] ${message}`);
     } catch (error) {
         console.error('Erro ao registrar log:', error);
     }

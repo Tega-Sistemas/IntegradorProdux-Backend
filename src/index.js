@@ -1,7 +1,7 @@
 import express from 'express';
 import { Model } from 'objection';
 import Knex from 'knex';
-import dotenv from 'dotenv';
+import 'dotenv/config'; // carrega as variáveis de ambiente
 import cron from 'node-cron';
 import cors from 'cors';
 import knexConfig from './config/knexfile.js';
@@ -10,8 +10,8 @@ import errorHandler from './middlewares/errorHandler.js';
 import Agenda from './models/Agenda.js';
 import { realizarSincronizacao } from './services/sincronizacaoService.js';
 import { validarApiKey } from './middlewares/validarApiKey.js';
-
-dotenv.config();
+import { verifyToken } from './middlewares/authMiddleware.js';
+import { getMe } from './controllers/authController.js';
 
 const knex = Knex(knexConfig.development);
 Model.knex(knex);
@@ -21,6 +21,7 @@ app.use(express.json());
 app.use(cors({
   origin: '*',
 }));
+app.use('/v1/me', verifyToken, getMe);
 app.use(validarApiKey);
 
 app.use('/', routes);

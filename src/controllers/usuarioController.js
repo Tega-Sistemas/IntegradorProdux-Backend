@@ -4,7 +4,8 @@ import Usuario from '../models/Usuario.js';
 export async function listarUsuarios(req, res) {
   try {
     const usuarios = await Usuario.query();
-    res.json(usuarios);
+    const usuariosTratados = usuarios.map(({ senha, ...resto}) => resto);
+    res.json(usuariosTratados);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao buscar usuários' });
@@ -14,11 +15,20 @@ export async function listarUsuarios(req, res) {
 // Criar um novo usuário
 export async function criarUsuario(req, res) {
   try {
-    const novoUsuario = await Usuario.query().insert(req.body);
-    res.status(201).json(novoUsuario);
+    const { usuario, email } = req.body;
+    let usuarioExiste = {};
+    usuarioExiste = await Usuario.query().where('usuario', usuario).orWhere('email', email).first();
+  
+    if (!usuarioExiste) {
+      const novoUsuario = await Usuario.query().insert(req.body);
+      res.status(201).json(novoUsuario);
+    } else {
+      res.status(400).json(`O usuário '${usuario}' ou email '${email}' informados, já existem no sistema.`);
+    }
+    
   } catch (error) {
     console.error(error);
-    res.status(400).json({ error: 'Erro ao criar usuário' });
+    res.status(400).json(`Erro ao criar usuário.`);
   }
 }
 
@@ -39,12 +49,33 @@ export async function buscarUsuarioPorId(req, res) {
 // Atualizar um usuário
 export async function atualizarUsuario(req, res) {
   try {
-    const atualizado = await Usuario.query()
-      .findById(req.params.id)
-      .patch(req.body);
-    if (!atualizado) {
+    const { email } = req.body;
+    const { id } = req.params;
+
+    let usuarioExiste = {};
+
+    usuarioExiste = await Usuario.query().findById(id);
+  
+    if (!usuarioExiste) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
+
+    const userUK = await Usuario.query().where('email', email).andWhereNot('id', id).first();
+
+    if (userUK) {
+      return res.status(400).json({
+        error: 'E-mail já está sendo utilizado por outro usuário!'
+      })
+    }
+
+    const usuario = await Usuario.query().findById(id).patch(req.body);
+
+    if (!usuario) {
+      res.status(400).json({
+        message: 'Ocorreram erros ao atualizar o usuário.'
+      })
+    }
+
     res.json({ message: 'Usuário atualizado com sucesso' });
   } catch (error) {
     console.error(error);
