@@ -45,6 +45,7 @@ pm2 start pm2.config.cjs
 
 # Salvar configuração no PM2 para reiniciar automaticamente
 echo ">>> Salvando configuração PM2..."
+pm2 startup
 pm2 save
 
 # Mostrar o status da aplicação no PM2
