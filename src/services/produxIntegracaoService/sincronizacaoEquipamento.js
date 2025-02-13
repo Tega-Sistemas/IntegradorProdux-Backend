@@ -31,7 +31,7 @@ async function sincronizar() {
 
         const select = await Equipamento
             .query()
-            .select('EquipamentoId', 'EquipamentoDescricao', 'EquipamentoNroFuncionarios', 'UnidadeSigla', 'SetorId', 'EmpresaId')
+            .select('EquipamentoId', 'EquipamentoDescricao', 'EquipamentoNroFuncionarios', 'UnidadeSigla', 'SetorId', 'EmpresaId', 'OperadorNome')
             .withGraphFetched('operacoes');
 
         data = {

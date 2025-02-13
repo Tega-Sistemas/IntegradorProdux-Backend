@@ -18,6 +18,7 @@ class Equipamento extends Model {
                 UnidadeSigla: { type: 'string', maxLength: 3 },
                 SetorId: { type: 'integer' },
                 EmpresaId: { type: 'integer' },
+                OperadorNome: { type: 'string', maxLength: 50 },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
             },
