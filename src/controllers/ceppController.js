@@ -1,5 +1,5 @@
 import express from 'express';
-import CEPP from '../models/CEPP.js';
+import CEPP from '../models/Cepp.js';
 import { formToJSON } from 'axios';
 
 const router = express.Router();
@@ -16,26 +16,30 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
+
         const {
-            CEPPDtCadastro,
-            CEPPDtInicio,
-            CEPPDtInicioRelatorio,
-            CEPPDtTermino,
-            CEPPMinutoCentesimal,
-            CEPPProduxId,
-            CEPPQtdePerda,
-            CEPPQtdeProduzida,
-            CEPPQtdeSobra,
-            CEPPTipoCEPP,
-            EmpresaId,
-            EquipamentoId,
-            MotivoParadaDescricao,
-            MotivoParadaId,
-            MotivoRetrabalhoDescricao,
-            MotivoRetrabalhoId,
-            OperadorId,
-            OperadorNome,
-            OrdemProducaoId,
+            sdtCEPP: {
+                EmpresaId,
+                CEPPTipoCEPP,
+                MotivoRetrabalhoId,
+                MotivoRetrabalhoDescricao,
+                MotivoParadaId,
+                MotivoParadaDescricao,
+                CEPPDtCadastro,
+                OrdemProducaoId,
+                EquipamentoId,
+                CEPPDtInicio,
+                CEPPDtTermino,
+                CEPPDtInicioRelatorio,
+                CEPPMinutoCentesimal,
+                CEPPQtdeProduzida,
+                CEPPQtdePerda,
+                CEPPQtdeSobra,
+                OperadorId,
+                OperadorNome,
+                CEPPProduxId,
+                OrdemProducaoCodReferencial
+            }
         } = req.body;
 
         const novoCEPP = await CEPP.query().insert({
@@ -58,62 +62,7 @@ router.post('/', async (req, res) => {
             OperadorId,
             OperadorNome,
             OrdemProducaoId,
-        });
-
-        res.status(201).json(novoCEPP);
-    } catch (error) {
-        console.error('Erro ao inserir CEPP:', error);
-        res.status(500).json({ error: 'Erro ao inserir CEPP' });
-    }
-});
-
-router.post('/', async (req, res) => {
-    try {
-
-        const { sdtCEPP } = req.body
-
-        const {
-            CEPPDtCadastro,
-            CEPPDtInicio,
-            CEPPDtInicioRelatorio,
-            CEPPDtTermino,
-            CEPPMinutoCentesimal,
-            CEPPProduxId,
-            CEPPQtdePerda,
-            CEPPQtdeProduzida,
-            CEPPQtdeSobra,
-            CEPPTipoCEPP,
-            EmpresaId,
-            EquipamentoId,
-            MotivoParadaDescricao,
-            MotivoParadaId,
-            MotivoRetrabalhoDescricao,
-            MotivoRetrabalhoId,
-            OperadorId,
-            OperadorNome,
-            OrdemProducaoId,
-        } = sdtCEPP;
-
-        const novoCEPP = await CEPP.query().insert({
-            CEPPDtCadastro,
-            CEPPDtInicio,
-            CEPPDtInicioRelatorio,
-            CEPPDtTermino,
-            CEPPMinutoCentesimal,
-            CEPPProduxId,
-            CEPPQtdePerda,
-            CEPPQtdeProduzida,
-            CEPPQtdeSobra,
-            CEPPTipoCEPP,
-            EmpresaId,
-            EquipamentoId,
-            MotivoParadaDescricao,
-            MotivoParadaId,
-            MotivoRetrabalhoDescricao,
-            MotivoRetrabalhoId,
-            OperadorId,
-            OperadorNome,
-            OrdemProducaoId,
+            OrdemProducaoCodReferencial
         });
 
         res.status(201).json(novoCEPP);
