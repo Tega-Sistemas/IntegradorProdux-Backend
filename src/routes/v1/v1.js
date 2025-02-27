@@ -15,6 +15,7 @@ import sincronizacaoRoutes from "./sincronizacaoRoutes.js";
 import logRoutes from "./logRoutes.js";
 import ceppRoutes from "./ceppRoutes.js";
 import authRoutes from './authRoutes.js';
+import consultaRoutes from './consultaRoutes.js';
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.use("/agenda", agendaRoutes);
 router.use("/configuracoesintegracao", configuracaoIntegracaoRoutes);
 router.use("/sincronizarforcado", sincronizacaoRoutes);
 router.use("/logs", logRoutes);
+router.use('/consultas', consultaRoutes);
 router.use("/cepp", ceppRoutes);
 
 export default router;
