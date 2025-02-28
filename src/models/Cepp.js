@@ -24,6 +24,7 @@ class CEPP extends Model {
                 CEPPQtdeProduzida: { type: 'integer' },
                 CEPPQtdeSobra: { type: 'integer' },
                 CEPPTipoCEPP: { type: 'string', maxLength: 50 },
+                CEPPOperacaoId: { type: 'integer'},
                 EmpresaId: { type: 'integer' },
                 EquipamentoId: { type: 'integer' },
                 MotivoParadaDescricao: { type: 'string', maxLength: 255 },
@@ -33,14 +34,13 @@ class CEPP extends Model {
                 OperadorId: { type: 'integer' },
                 OperadorNome: { type: 'string', maxLength: 255 },
                 OrdemProducaoId: { type: 'integer' },
-                OrdemProducaoCodReferencial: { type: 'string', maxLength: 100 }
+                OrdemProducaoCodReferencial: { type: 'string', maxLength: 100 },
+                OperacoesCeppId: { type: 'integer' },
+                OperacoesCEPPDescricao: { type: 'string', maxLength: 50 },
+                stSetorId: { type: 'integer' },
+                stSetorDescricao: { type: 'string', maxLength: 50 },
             },
         };
-    }
-
-    $beforeUpdate() {
-        const date = new Date();
-        this.updated_at = date.toISOString().slice(0, 19).replace('T', ' ');
     }
 }
 
