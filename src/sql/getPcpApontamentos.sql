@@ -9,16 +9,22 @@ select
 	c.EquipamentoId postodetrabalho_apont,
 	c.OperadorId responsavel_apont,
 	0 turno_apont,
-	3 processo_apont,
+	case
+		WHEN c.MotivoParadaId = 0 and c.CEPPTipoCEPP = "A" then 0
+		WHEN m.MotivoParadaDescricao not like '%SETUP%' and c.CEPPTipoCEPP = "R" then 1
+		WHEN m.MotivoParadaDescricao not like '%SETUP%' and c.CEPPTipoCEPP = "A" then 2
+		WHEN m.MotivoParadaDescricao like '%SETUP%' and c.CEPPTipoCEPP = "A" then 3
+		ELSE 0
+	end processo_apont,
 	0 fluxo_apont,
 	"N" prevista_apont,
-	0 item_apont,
+	o.ProdutoCodigo item_apont,
 	0 variacao_apont,
 	0 acabamento_apont,
-	0 cor_apont,
+	o.RevestimentoId cor_apont,
 	0 grade_apont,
 	"" observacao_apont,
-	0 quantidade_apont,
+	c.CEPPQtdeProduzida quantidade_apont,
 	CONCAT(
 	    '1899-12-30 ',
 	    DATE_FORMAT(c.CEPPDtInicio, '%H:%i:%s.'),
@@ -40,12 +46,12 @@ select
 	now() datahoraalteracao_apont,
 	c.OperadorNome usuarioinclusao_apont,
 	c.OperadorNome usuarioalteracao_apont
-from integrador_produx.cepp c
-inner join integrador_produx.ordemproducao o on o.OrdemProducaoId = c.OrdemProducaoId
-inner join integrador_produx.equipamento e on e.EquipamentoId = c.EquipamentoId
-inner join integrador_produx.motivoparada m on m.MotivoParadaId = c.MotivoParadaId
+from cepp c
+inner join ordemproducao o on o.LoteProducaoId = c.OrdemProducaoId
+inner join equipamento e on e.EquipamentoId = c.EquipamentoId
+left join motivoparada m on m.MotivoParadaId = c.MotivoParadaId
 where c.OrdemProducaoCodReferencial <> ""
-and c.CEPPTipoCEPP in ('A')
-and m.MotivoParadaDescricao like '%SETUP%'
+and c.CEPPTipoCEPP in ('P', 'A', 'R')
+group by c.stSetorId, o.ProdutoCodigo, o.RevestimentoId, c.EquipamentoId
 order by e.SetorId, c.CEPPDtInicio
 ;

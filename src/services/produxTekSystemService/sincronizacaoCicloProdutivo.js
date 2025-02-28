@@ -10,6 +10,10 @@ const getSqlFilePath = (relativePath) => {
   return path.join(process.cwd(),'src','sql', relativePath);
 }
 
+const getJsonColumnPath = (relativePath) => {
+  return path.join(process.cwd(),'src','json', relativePath);
+}
+
 const api_key = process.env.API_KEY;
 
 async function sincronizar() {
@@ -17,6 +21,9 @@ async function sincronizar() {
   const batchSize = 20;
   let urlExterna;
   let urlEndpoint;
+  let sqlConfig;
+  let columns;
+  let ordemProducaoId;
 
   try {
     const configuracao = await ConfiguracaoIntegracao.query().where('tipo_integracao', 2);
@@ -64,11 +71,87 @@ async function sincronizar() {
         }
 
         cepp.loteproducao_ciclopcp = data.LOTE_OP;
+        sqlConfig = "";
+        sqlConfig = JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_columns.json'), 'utf-8'));
+        columns = sqlConfig.columns.map(col => {
+          if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
+            return db.raw(`${col.column} as ${col.alias}`);
+          } else {
+            return `${col.column} as ${col.alias}`;
+          }
+        });
 
+        ordemProducaoId = cepp.ordemproducao_ciclopcp;
+        const apontamentos = await db('cepp as c')
+          .select(columns)
+          .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
+          .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
+          .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+          .where('c.OrdemProducaoCodReferencial', '<>', '')
+          .whereIn('c.CEPPTipoCEPP', ['A', 'P', 'R'])
+          .andWhere('c.OrdemProducaoId', ordemProducaoId)
+          .groupBy('c.OrdemProducaoId')
+          .groupBy('c.stSetorId')
+          .groupBy('o.ProdutoCodigo')
+          .groupBy('o.RevestimentoId')
+          .groupBy('c.EquipamentoId')
+          .orderBy('e.SetorId')
+          .orderBy('c.CEPPDtInicio');
+
+        sqlConfig = "";  
+        sqlConfig = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_det_columns.json'), 'utf-8'));
+        columns = sqlConfig.columns.map(col => {
+          if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
+            return db.raw(`${col.column} as ${col.alias}`);
+          } else {
+            return `${col.column} as ${col.alias}`;
+          }
+        });
+
+        const apontamentoDetalhado = await Promise.all(apontamentos.map(async (apontamento) => {
+          const apontamentoDet = await db('cepp as c')
+            .select(columns)
+            .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
+            .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
+            .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+            .where('c.OrdemProducaoCodReferencial', '<>', '')
+            .where(function() {
+              switch (apontamento.processo_apont) {
+                case 1:
+                  this.where('c.CEPPTipoCEPP', 'R');
+                  break;
+                case 2:
+                  this.where('c.CEPPTipoCEPP', 'A');
+                  break;
+                default:
+                  this.where('c.CEPPTipoCEPP', 'A'); // Caso queira algum valor padrão
+              }
+            })
+            .where('c.CEPPId', apontamento.cepp_id)
+            .where('c.OrdemProducaoId', ordemProducaoId)
+            .where('c.stSetorId', apontamento.setor_apont)
+            .where('o.ProdutoCodigo', apontamento.item_apont)
+            .where('c.RevestimentoId', apontamento.cor_apont)
+            .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
+            .groupBy('c.CEPPId')
+            .orderBy('e.SetorId')
+            .orderBy('c.CEPPDtInicio');
+            apontamento.pcp_apontamento_det = [];
+            apontamento.pcp_apontamento_det.push(apontamento);
+            return apontamento;
+        }));
+        
+        // console.log(apontamentos);
+        // console.log(apontamentoDetalhado.flat());
+
+        // apontamentos.pcp_apontamento_det = apontamentoDetalhado.flat() || [];
+
+        cepp.pcp_apontamento = apontamentos || [];
 
 
       } catch (error) {
         console.error("Erro na requisição");
+        console.error(error)
       }
       return cepp;
 

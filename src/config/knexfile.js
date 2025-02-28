@@ -16,6 +16,7 @@ export default {
     },
     seeds: {
       directory: '../data/seed',
-    }
+    },
+    debug: false,
   },
 };
