@@ -27,6 +27,7 @@ class Agenda extends Model {
         return {
             EXTRACAO: 1,
             ENVIO_ERP: 2,
+            ENVIO_ERP_EXT: 3,
         };
     }
 
