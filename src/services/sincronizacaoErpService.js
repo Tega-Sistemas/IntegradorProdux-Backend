@@ -10,7 +10,7 @@ async function realizarSincronizacao() {
 
         const cicloProdutivo = await sincronizarCicloProdutivo();
 
-        return { cicloProdutivo, status: 'success', message: 'teste' };
+        return { ...cicloProdutivo };
     
   } catch (error) {
     console.error('Erro na sincronização: ', error)

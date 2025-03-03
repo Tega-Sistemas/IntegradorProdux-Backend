@@ -2,7 +2,9 @@ import { v4 as uuidv4, v4 } from 'uuid';
 import Log from '../models/Log.js';
 
 export const listarLogs = async (req, res) => {
-    const { dataInicial, dataFinal, ordenacao } = req.query;
+    const { dataInicial, dataFinal, ordenacao, page, limit } = req.query;
+
+    const offset = (page - 1) * limit;
 
     if (!dataInicial || !dataFinal) {
         return res.status(400).json({ message: 'As datas inicial e final são obrigatórias' });
@@ -20,7 +22,9 @@ export const listarLogs = async (req, res) => {
     try {
         const logs = await Log.query()
             .whereBetween('created_at', [dataInicial, dataFinal])
-            .orderBy('created_at', ordem);
+            .orderBy('created_at', ordem)
+            .limit(limit)
+            .offset(offset);
 
         res.status(200).json(logs);
     } catch (error) {

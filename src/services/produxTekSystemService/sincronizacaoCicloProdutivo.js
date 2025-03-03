@@ -3,7 +3,7 @@ import path from 'path';
 import axios from 'axios';
 import ConfiguracaoIntegracao from '../../models/ConfiguracaoIntegracao.js';
 import Cepp from '../../models/Cepp.js';
-import { logErro } from '../logService.js';
+import { logErro, logInfo, logSucesso } from '../logService.js';
 import db from '../../config/db.js';
 
 const getSqlFilePath = (relativePath) => {
@@ -15,6 +15,23 @@ const getJsonColumnPath = (relativePath) => {
 }
 
 const api_key = process.env.API_KEY;
+
+const sendLog = (tipo, message) => {
+  switch (tipo) {
+    case 'info':
+      logInfo(`<p>${message}</p>`)
+      break;
+    case 'error':
+      logErro(`<p>${message}</p>`)
+      break;
+    case 'success':
+      logInfo(`<p>${message}</p>`)
+      break;
+    default:
+      logInfo(`<p>${message}</p>`)
+      break;
+  }
+}
 
 async function sincronizar() {
   const syncName = 'CEPP - Ciclo Produtivo';
@@ -31,6 +48,8 @@ async function sincronizar() {
   sqlApontamentoDet = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_det_columns.json'), 'utf-8'));
 
   try {
+    sendLog('info', 'Iniciando sincronização para o ERP.')
+    sendLog('info', 'Buscando configuração de integração com ERP')
     const configuracao = await ConfiguracaoIntegracao.query().where('tipo_integracao', 2);
 
     if (configuracao.length > 0) {
@@ -39,16 +58,17 @@ async function sincronizar() {
       });
     } else {
         let log = `Não foi encontrada configuração na integração - ${syncName}`;
-        logErro(`<p>${log}</p>`);
+        sendLog('error', log)
         return { status: 'error', message: log };
     }
 
     if (!urlExterna) {
       let log = 'Ocorreu um erro ao montar a URL da API';
-      logErro(`<p>${log}</p>`);
+      sendLog('error', log)
       return { status: 'error', message: log };
     }
 
+    sendLog('info', 'Buscando registros de ciclo produtivo a serem sincronizados.')
     const ceppsAtualizar = await Cepp.query()
       .where('CEPPSincronizado', false);
 
@@ -58,6 +78,7 @@ async function sincronizar() {
 
     urlEndpoint = '/ordem_producao';
     
+    sendLog('info', 'Buscando dados de apontamento e apontamento_det para os ciclos produtivos.')
     const cicloProdutivo = await Promise.all(resultado[0].map(async (cepp) => {
       try {
         const url = `${urlExterna}${urlEndpoint}/${cepp.ordemproducao_ciclopcp}`;
@@ -68,8 +89,8 @@ async function sincronizar() {
         });
 
         if (!data) {
-          logErro(`<p>Erro na requisição</p>`);
-          return { status: 'error', message: 'Erro na requisição' };
+          sendLog('error', `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'`)
+          return { status: 'error', message: `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'` };
         }
         cepp.loteproducao_ciclopcp = data.lote_op;
 
@@ -81,6 +102,7 @@ async function sincronizar() {
           }
         });
 
+        sendLog('info', 'Buscando dados de apontamentos produtivos/retrabalho.')
         ordemProducaoId = cepp.ordemproducao_ciclopcp;
         const apontamentos = await db('cepp as c')
           .select(colunasApontamento)
@@ -98,6 +120,7 @@ async function sincronizar() {
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
 
+          sendLog('info', 'Buscando dados de apontamentos de parada')
           const apontamentosParada = await db('cepp as c')
           .select(colunasApontamento)
           .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
@@ -122,6 +145,7 @@ async function sincronizar() {
 
         const newApontamentos = [...apontamentos, ...apontamentosParada];
 
+        sendLog('info', 'Buscando dados de apontamento_det.')
         const apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
           try {
             const apontamentoDet = await db('cepp as c')
@@ -152,7 +176,7 @@ async function sincronizar() {
             apontamento.pcp_apontamento_det = apontamentoDet || [];
             return apontamento;
           } catch (error) {
-            console.error("Erro na requisição, Error:", error);
+            sendLog('error', `Erro na busca dos apontamentos_det. Error: ${error}`)
             return { status: 'error', message: `Erro na requisição. Error: ${error}` };
           }
         }));
@@ -160,8 +184,8 @@ async function sincronizar() {
         cepp.pcp_apontamento = apontamentoDetalhado || [];
 
       } catch (error) {
-        console.error("Erro na requisição, Error:", error);
-        return { status: 'error', message: `Erro na requisição. Error: ${error}` };
+        sendLog('error', `Erro na requisição. Error: ${error}`)
+        return { status: 'error', message: `Exceção na busca dos apontamentos do ciclo. Error: ${error}` };
       }
       return { pcp_ciclo_produtivo: { ...cepp } };
     }));
@@ -184,12 +208,13 @@ async function sincronizar() {
           });
 
           if (data.status !== 'success') {
-            logErro(`<p>Falha ao enviar batch: ${JSON.stringify(batch)}</p>`);
+            sendLog('error', `Falha ao enviar batch: ${JSON.stringify(batch)}`)
+            return { status: 'error', message: `Falha ao enviar batch: ${JSON.stringify(batch)}`}
           }
 
         } catch (error) {
-          // console.log(JSON.stringify(batch));
-          logErro(`<p>Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})</p>`);
+          
+          sendLog('error', `Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})`);
           return { status: 'error', message: `Erro ao enviar batch: (message: ${error.message})` };
         }
       }
@@ -198,16 +223,17 @@ async function sincronizar() {
         .whereIn('CEPPId', ceppsAtualizar.map(cepp => cepp.CEPPId))
         .patch({ CEPPSincronizado: true });
 
-    
+      sendLog('success', `Sincronização concluída com sucesso.`);
       return { status: 'success', message: 'Sincronização concluída com sucesso.' };
     } else {
-      return { status: 'error', message: `Ciclo Produtivo está vazio. Tamanho: ${cicloProdutivo.length}` };
+      sendLog('info', `Todos os ciclos produtivos já se encontram sincronizados!`);
+      return { status: 'info', message: `Todos os ciclos produtivos já se encontram sincronizados!` };
     }
 
   } catch (error) {
     // console.error(error);
-    logErro(`<p>Erro geral na sincronização de ${syncName} (message: ${error.message})</p>`);
-        return { status: 'error', message: `Erro na sincronização de ${syncName}. Verifique os logs.` };
+    sendLog('error', `Erro geral na sincronização de ${syncName} (message: ${error.message})`);
+    return { status: 'error', message: `Erro na sincronização de ${syncName}. Verifique os logs.` };
   }
 }
 
