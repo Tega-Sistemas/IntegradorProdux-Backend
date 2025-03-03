@@ -1,6 +1,11 @@
 {
   "columns": [
     {
+      "column": "0",
+      "alias": "autoinc_apont",
+      "raw": true
+    },
+    {
       "column": "c.CEPPId",
       "alias": "cepp_id",
       "raw": false

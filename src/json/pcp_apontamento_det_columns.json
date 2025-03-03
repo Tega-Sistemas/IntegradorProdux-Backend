@@ -51,9 +51,9 @@
       "raw": true
     },
     {
-      "column": "case when c.OperadorNome == '' then e.OperadorNome else c.OperadorNome end",
+      "column": "case when c.OperadorNome = '' then e.OperadorNome else c.OperadorNome end",
       "alias": "usuarioinclusao_aptdet",
-      "raw": false
+      "raw": true
     },
     {
       "column": "c.OperadorNome",

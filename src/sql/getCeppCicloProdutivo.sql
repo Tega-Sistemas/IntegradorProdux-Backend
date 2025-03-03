@@ -1,4 +1,5 @@
 select
+	0 codigo_ciclopcp,
 	c.EmpresaId empresa_ciclopcp,
 	o.LoteProducaoId ordemproducao_ciclopcp,
 	0 loteproducao_ciclopcp,
@@ -53,7 +54,7 @@ select
 		and m.MotivoParadaDescricao like '%SETUP%'
 		and aj.OrdemProducaoId = c.OrdemProducaoId
 		and aj.EquipamentoId = c.EquipamentoId
-	) tempoajustemaq_ciclopcp,
+	) tempoajustesmaq_ciclopcp,
 	(
 		select
 			COALESCE(
@@ -70,6 +71,8 @@ select
 		and tp.OrdemProducaoId = c.OrdemProducaoId
 		and tp.EquipamentoId = c.EquipamentoId
 	) tempointerrupcoes_ciclopcp,
+	'1899-12-30 00:00:00.000' tempointerrupcao_p_ciclopcp,
+	'1899-12-30 00:00:00.000' tempointerrupcao_t_ciclopcp,
 	'1899-12-30 00:00:00.000' tempoprevistoproducao_ciclopcp,
 	'1899-12-30 00:00:00.000' tempoprevistoajuste_ciclopcp,
 	'1899-12-30 00:00:00.000' tempoprevistointerrup_ciclopcp,
@@ -83,7 +86,7 @@ from cepp c
 inner join ordemproducao o on o.OrdemProducaoId = c.OrdemProducaoId
 inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 where c.OrdemProducaoCodReferencial <> ""
-and c.CEPPTipoCEPP in ('P')
+-- and c.CEPPTipoCEPP in ('P')
 and c.CEPPSincronizado = 0
 group by c.OrdemProducaoId, c.EquipamentoId, e.SetorId
 order by e.SetorId, c.CEPPDtInicio
