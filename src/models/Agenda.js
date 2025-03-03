@@ -14,7 +14,7 @@ class Agenda extends Model {
             properties: {
                 AgendaId: { type: "integer" },
                 Horario: { type: "string", format: "time" },
-                Tipo: { type: "integer", enum: [1, 2] },
+                Tipo: { type: "integer", enum: [1, 2, 3] },
                 CriadoEm: { type: "string", format: "date-time" },
                 AlteradoEm: { type: "string", format: "date-time" },
                 UsuarioCriacao: { type: "string", maxLength: 50 },
