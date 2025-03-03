@@ -26,9 +26,9 @@
       "raw": false
     },
     {
-      "column": "e.SetorId",
+      "column": "case when c.stSetorId = 0 then e.SetorId else c.stSetorId end",
       "alias": "setor_apont",
-      "raw": false
+      "raw": true
     },
     {
       "column": "0",
@@ -71,7 +71,7 @@
       "raw": true
     },
     {
-      "column": "0",
+      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else o.ProdutoCodigo end",
       "alias": "item_apont",
       "raw": true
     },
@@ -86,7 +86,7 @@
       "raw": true
     },
     {
-      "column": "0",
+      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else o.RevestimentoId end",
       "alias": "cor_apont",
       "raw": true
     },
@@ -101,7 +101,7 @@
       "raw": true
     },
     {
-      "column": "0",
+      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else c.CEPPQtdeProduzida end",
       "alias": "quantidade_apont",
       "raw": true
     },

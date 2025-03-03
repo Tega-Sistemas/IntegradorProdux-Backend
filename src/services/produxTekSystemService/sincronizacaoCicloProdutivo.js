@@ -88,12 +88,26 @@ async function sincronizar() {
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
           .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
           .where('c.OrdemProducaoCodReferencial', '<>', '')
-          .whereIn('c.CEPPTipoCEPP', ['A', 'P', 'R'])
+          .whereIn('c.CEPPTipoCEPP', ['P', 'R'])
           .andWhere('c.OrdemProducaoId', ordemProducaoId)
           .groupBy('c.OrdemProducaoId')
           .groupBy('c.stSetorId')
           .groupBy('o.ProdutoCodigo')
           .groupBy('o.RevestimentoId')
+          .groupBy('c.EquipamentoId')
+          .orderBy('e.SetorId')
+          .orderBy('c.CEPPDtInicio');
+
+          const apontamentosParada = await db('cepp as c')
+          .select(columns)
+          .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
+          .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
+          .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+          .where('c.OrdemProducaoCodReferencial', '<>', '')
+          .whereIn('c.CEPPTipoCEPP', ['A'])
+          .andWhere('c.OrdemProducaoId', ordemProducaoId)
+          .groupBy('c.OrdemProducaoId')
+          .groupBy('c.stSetorId')
           .groupBy('c.EquipamentoId')
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
@@ -108,12 +122,14 @@ async function sincronizar() {
           }
         });
 
-        const apontamentoDetalhado = await Promise.all(apontamentos.map(async (apontamento) => {
+        const newApontamentos = [...apontamentos, ...apontamentosParada];
+
+        const apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
           const apontamentoDet = await db('cepp as c')
             .select(columns)
             .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
             .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
-            .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+            .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
             .where('c.OrdemProducaoCodReferencial', '<>', '')
             .where(function() {
               switch (apontamento.processo_apont) {
@@ -127,26 +143,18 @@ async function sincronizar() {
                   this.where('c.CEPPTipoCEPP', 'A'); // Caso queira algum valor padrão
               }
             })
-            .where('c.CEPPId', apontamento.cepp_id)
             .where('c.OrdemProducaoId', ordemProducaoId)
             .where('c.stSetorId', apontamento.setor_apont)
-            .where('o.ProdutoCodigo', apontamento.item_apont)
-            .where('c.RevestimentoId', apontamento.cor_apont)
             .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
             .groupBy('c.CEPPId')
             .orderBy('e.SetorId')
             .orderBy('c.CEPPDtInicio');
-            apontamento.pcp_apontamento_det = [];
-            apontamento.pcp_apontamento_det.push(apontamento);
+            // apontamento.pcp_apontamento_det = [];
+            apontamento.pcp_apontamento_det = apontamentoDet || [];
             return apontamento;
         }));
         
-        // console.log(apontamentos);
-        // console.log(apontamentoDetalhado.flat());
-
-        // apontamentos.pcp_apontamento_det = apontamentoDetalhado.flat() || [];
-
-        cepp.pcp_apontamento = apontamentos || [];
+        cepp.pcp_apontamento = apontamentoDetalhado || [];
 
 
       } catch (error) {
