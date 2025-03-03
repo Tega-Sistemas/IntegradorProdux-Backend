@@ -48,7 +48,6 @@ async function sincronizar() {
   sqlApontamentoDet = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_det_columns.json'), 'utf-8'));
 
   try {
-    sendLog('info', 'Iniciando sincronização para o ERP.')
     sendLog('info', 'Buscando configuração de integração com ERP')
     const configuracao = await ConfiguracaoIntegracao.query().where('tipo_integracao', 2);
 

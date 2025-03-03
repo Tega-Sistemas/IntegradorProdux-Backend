@@ -9,6 +9,7 @@ import routes from './routes/index.js';
 import errorHandler from './middlewares/errorHandler.js';
 import Agenda from './models/Agenda.js';
 import { realizarSincronizacao } from './services/sincronizacaoService.js';
+import { realizarSincronizacao as realizarSincronizacaoERP } from './services/sincronizacaoErpService.js';
 import { validarApiKey } from './middlewares/validarApiKey.js';
 import { verifyToken } from './middlewares/authMiddleware.js';
 import { getMe } from './controllers/authController.js';
@@ -67,6 +68,37 @@ async function atualizarAgendas() {
         console.log(`Executando sincronização para agenda ID: ${agenda.AgendaId}`);
         try {
           await realizarSincronizacao(agenda);
+        } catch (error) {
+          console.error(`Erro ao sincronizar agenda ID: ${agenda.AgendaId}`, error);
+        }
+      });
+
+      cronTasks.set(agenda.AgendaId, task);
+    });
+
+    console.log(`Agendas atualizadas. Total: ${agendas.length}`);
+  } catch (error) {
+    console.error('Erro ao atualizar as agendas:', error);
+  }
+
+  try {
+    console.log('Carregando e atualizando agendas do tipo 3 (Envio ao ERP)...');
+    const agendas = await Agenda.query().where('Tipo', 3);
+
+    agendas.forEach((agenda) => {
+      const horario = agenda.Horario;
+      const [hora, minuto] = horario.split(':');
+      const cronExpression = `${minuto} ${hora} * * *`;
+
+      if (cronTasks.has(agenda.AgendaId)) {
+        cronTasks.get(agenda.AgendaId).stop();
+        cronTasks.delete(agenda.AgendaId);
+      }
+
+      const task = cron.schedule(cronExpression, async () => {
+        console.log(`Executando sincronização para agenda ID: ${agenda.AgendaId}`);
+        try {
+          await realizarSincronizacaoERP(agenda);
         } catch (error) {
           console.error(`Erro ao sincronizar agenda ID: ${agenda.AgendaId}`, error);
         }

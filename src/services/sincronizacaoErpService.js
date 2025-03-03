@@ -1,4 +1,4 @@
-import { logInfo, logSucesso } from './logService.js';
+import { logInfo, logErro } from './logService.js';
 import { sincronizar as sincronizarCicloProdutivo } from './produxTekSystemService/sincronizacaoCicloProdutivo.js';
 
 async function realizarSincronizacao() {
@@ -13,7 +13,7 @@ async function realizarSincronizacao() {
         return { ...cicloProdutivo };
     
   } catch (error) {
-    console.error('Erro na sincronização: ', error)
+    logErro('<p>Erro na sincronização dos dados para o ERP.</p>')
     throw error;
   }
 }
