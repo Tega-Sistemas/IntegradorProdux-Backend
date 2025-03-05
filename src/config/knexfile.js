@@ -1,4 +1,15 @@
-import 'dotenv/config'; // Carrega as variáveis de ambiente
+import * as dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Obtém o diretório raiz do projeto
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const rootPath = path.resolve(__dirname, '../../'); // Sobe dois níveis para a raiz
+
+// Carrega o .env da raiz
+dotenv.config({ path: path.join(rootPath, '.env') });
 
 export default {
   development: {
