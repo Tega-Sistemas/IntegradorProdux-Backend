@@ -13,9 +13,10 @@ class MotivoParada extends Model {
             required: ['MotivoParadaDescricao'], // Coluna obrigatória
 
             properties: {
-                MotivoParadaId: { type: 'string' }, // Usando string, pois o campo é decimal
+                MotivoParadaId: { type: 'integer' },
                 MotivoParadaDescricao: { type: 'string', maxLength: 50 },
-                MotivoParadaEvitavel: { type: 'integer' }, // Este campo pode ser nulo
+                MotivoParadaEvitavel: { type: 'integer' },
+                MotivoParadaInterrupcaoPrevista: { type: 'string' },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
             },

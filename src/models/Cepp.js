@@ -36,7 +36,7 @@ class CEPP extends Model {
                 OrdemProducaoId: { type: 'integer' },
                 OrdemProducaoCodReferencial: { type: 'string', maxLength: 100 },
                 CEPPSincronizado: { type: 'boolean', default: false },
-                OperacoesCeppId: { type: 'integer' },
+                OperacoesCEPPId: { type: 'integer' },
                 OperacoesCEPPDescricao: { type: 'string', maxLength: 50 },
                 stSetorId: { type: 'integer' },
                 stSetorDescricao: { type: 'string', maxLength: 50 },

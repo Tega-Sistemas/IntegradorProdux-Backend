@@ -42,6 +42,7 @@ async function sincronizar() {
   let sqlApontamentoDet = "";
   let colunasApontamento = "";
   let colunasApontamentoDet = "";
+  let loteProducaoId = 0;
   let ordemProducaoId = 0;
 
   sqlApontamento = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_columns.json'), 'utf-8'));
@@ -102,85 +103,100 @@ async function sincronizar() {
         });
 
         sendLog('info', 'Buscando dados de apontamentos produtivos/retrabalho.')
-        ordemProducaoId = cepp.ordemproducao_ciclopcp;
+        loteProducaoId = cepp.ordemproducao_ciclopcp;
         const apontamentos = await db('cepp as c')
           .select(colunasApontamento)
-          .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
+          .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
           .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
           .where('c.OrdemProducaoCodReferencial', '<>', '')
           .whereIn('c.CEPPTipoCEPP', ['P', 'R'])
-          .andWhere('c.OrdemProducaoId', ordemProducaoId)
-          .groupBy('c.OrdemProducaoId')
-          .groupBy('c.stSetorId')
-          .groupBy('o.ProdutoCodigo')
-          .groupBy('o.RevestimentoId')
-          .groupBy('c.EquipamentoId')
+          .andWhere('o.LoteProducaoId', loteProducaoId)
+          .andWhere('c.OperacoesCEPPId', cepp.setor_ciclopcp)
+          .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
 
           sendLog('info', 'Buscando dados de apontamentos de parada')
           const apontamentosParada = await db('cepp as c')
           .select(colunasApontamento)
-          .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
+          .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
+          .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+          .where('c.OrdemProducaoCodReferencial', '<>', '')
+          .whereIn('c.CEPPTipoCEPP', ['A'])
+          .where('m.MotivoParadaDescricao', 'not like', '%REGULAGEM%')
+          .andWhere('o.LoteProducaoId', loteProducaoId)
+          .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
+          .orderBy('c.CEPPDtInicio');
+
+          const apontamentosRegulagem = await db('cepp as c')
+          .select(colunasApontamento)
+          .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
           .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
           .where('c.OrdemProducaoCodReferencial', '<>', '')
           .whereIn('c.CEPPTipoCEPP', ['A'])
-          .andWhere('c.OrdemProducaoId', ordemProducaoId)
-          .groupBy('c.OrdemProducaoId')
-          .groupBy('c.stSetorId')
-          .groupBy('c.EquipamentoId')
+          .where('m.MotivoParadaDescricao', 'like', '%REGULAGEM%')
+          .andWhere('o.LoteProducaoId', loteProducaoId)
+          .andWhere('c.OperacoesCEPPId', cepp.setor_ciclopcp)
+          .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
 
-          colunasApontamentoDet = sqlApontamentoDet.columns.map(col => {
-          if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
-            return db.raw(`${col.column} as ${col.alias}`);
-          } else {
-            return `${col.column} as ${col.alias}`;
-          }
-        });
-
-        const newApontamentos = [...apontamentos, ...apontamentosParada];
+        const newApontamentos = [
+          ...apontamentos,
+          ...apontamentosParada,
+          ...apontamentosRegulagem
+        ];
 
         sendLog('info', 'Buscando dados de apontamento_det.')
-        const apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
+        
+        if (newApontamentos.length > 0) {
+          let apontamentoDetalhado;
           try {
-            const apontamentoDet = await db('cepp as c')
-            .select(colunasApontamentoDet)
-            .innerJoin('ordemproducao as o', 'o.LoteProducaoId', 'c.OrdemProducaoId')
-            .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
-            .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
-            .where('c.OrdemProducaoCodReferencial', '<>', '')
-            .where(function() {
-              switch (apontamento.processo_apont) {
-                case 1:
-                  this.where('c.CEPPTipoCEPP', 'R');
-                  break;
-                case 2:
-                  this.where('c.CEPPTipoCEPP', 'A');
-                  break;
-                default:
-                  this.where('c.CEPPTipoCEPP', 'A'); // Caso queira algum valor padrão
+            colunasApontamentoDet = sqlApontamentoDet.columns.map(col => {
+              if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
+                return db.raw(`${col.column} as ${col.alias}`);
+              } else {
+                return `${col.column} as ${col.alias}`;
               }
-            })
-            .where('c.OrdemProducaoId', ordemProducaoId)
-            .where('c.stSetorId', apontamento.setor_apont)
-            .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
-            .groupBy('c.CEPPId')
-            .orderBy('e.SetorId')
-            .orderBy('c.CEPPDtInicio');
-            // apontamento.pcp_apontamento_det = [];
-            apontamento.pcp_apontamento_det = apontamentoDet || [];
-            return apontamento;
+            });
+
+            apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
+              try {
+                if (apontamento.processo_apont !== 0) {
+                  const apontamentoDet = await db('cepp as c')
+                  .select(colunasApontamentoDet)
+                  .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
+                  .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
+                  .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+                  .where('c.OrdemProducaoCodReferencial', '<>', '')
+                  .whereIn('c.CEPPTipoCEPP', ['A', 'R'])
+                  .andWhere('o.LoteProducaoId', loteProducaoId)
+                  .where('m.MotivoParadaDescricao', 'not like', '%REGULAGEM%')
+                  .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
+                  .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
+                  .where('c.CEPPId', apontamento.cepp_id)
+                  .groupBy('c.CEPPId')
+                  .orderBy('e.SetorId')
+                  .orderBy('c.CEPPDtInicio');
+                  // apontamento.pcp_apontamento_det = [];
+                  apontamento.pcp_apontamento_det = apontamentoDet || [];
+                  return apontamento;
+                } else {
+                  apontamento.pcp_apontamento_det = [];
+                  return apontamento
+                }
+              } catch (error) {
+                sendLog('error', `Erro na busca dos apontamentos_det. Error: ${error}`);
+                return { status: 'error', message: `Erro na requisição. Error: ${error}` };
+              }
+            }));
           } catch (error) {
-            sendLog('error', `Erro na busca dos apontamentos_det. Error: ${error}`)
             return { status: 'error', message: `Erro na requisição. Error: ${error}` };
           }
-        }));
-        
-        cepp.pcp_apontamento = apontamentoDetalhado || [];
+          cepp.pcp_apontamento = apontamentoDetalhado || [];
+        }
 
       } catch (error) {
         sendLog('error', `Erro na requisição. Error: ${error}`)
@@ -189,11 +205,18 @@ async function sincronizar() {
       return { pcp_ciclo_produtivo: { ...cepp } };
     }));
 
+
     if (cicloProdutivo.length > 0) {
       const batches = [];
 
       for (let i = 0; i < cicloProdutivo.length; i += batchSize) {
         batches.push(cicloProdutivo.slice(i, i + batchSize));
+      }
+
+      return {
+        status: 'warning',
+        message: 'Testando retornos.',
+        cicloProdutivo
       }
 
       urlEndpoint = '/pcp_ciclo_completo'
@@ -206,15 +229,15 @@ async function sincronizar() {
             }
           });
 
-          if (data.status !== 'success') {
-            sendLog('error', `Falha ao enviar batch: ${JSON.stringify(batch)}`)
-            return { status: 'error', message: `Falha ao enviar batch: ${JSON.stringify(batch)}`}
-          }
+          // if (data.status !== 'success') {
+          //   sendLog('error', `Falha ao enviar batch: ${JSON.stringify(batch)}`)
+          //   return { status: 'error', message: `Falha ao enviar batch: ${JSON.stringify(batch)}`}
+          // }
 
         } catch (error) {
           
-          sendLog('error', `Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})`);
-          return { status: 'error', message: `Erro ao enviar batch: (message: ${error.message})` };
+          // sendLog('error', `Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})`);
+          return { status: 'error', message: `Erro ao enviar batch: (message: ${error})` };
         }
       }
 

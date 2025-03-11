@@ -35,6 +35,8 @@ async function sincronizar() {
             "MotivoParada": select
         };
 
+        console.log(data);
+
         await axios.post(urlExterna, data, {
             headers: {
                 'Content-Type': 'application/json',

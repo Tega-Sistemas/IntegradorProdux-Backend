@@ -17,7 +17,10 @@ select
 		ELSE 0
 	end processo_apont,
 	0 fluxo_apont,
-	"N" prevista_apont,
+	case
+		when m.MotivoParadaInterrupcaoPrevista is null then "N"
+		else m.MotivoParadaInterrupcaoPrevista
+	end prevista_apont,
 	o.ProdutoCodigo item_apont,
 	0 variacao_apont,
 	0 acabamento_apont,
@@ -39,7 +42,7 @@ select
 		sec_to_time(ROUND(timestampdiff(second, c.CEPPDtInicio, c.CEPPDtTermino))),
 		"1899-12-30 %H:%i:%s"
 	) tempototal_apont,
-	0 auditoria_apont,
+	-- 0 auditoria_apont,
 	0 cicloprodutivo_apont,
 	0 fatorrateiotempo_apont,
 	now() datahorainclusao_apont,
@@ -47,11 +50,11 @@ select
 	c.OperadorNome usuarioinclusao_apont,
 	c.OperadorNome usuarioalteracao_apont
 from cepp c
-inner join ordemproducao o on o.LoteProducaoId = c.OrdemProducaoId
+inner join ordemproducao o on o.OrdemProducaoId = c.OrdemProducaoId
 inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 left join motivoparada m on m.MotivoParadaId = c.MotivoParadaId
 where c.OrdemProducaoCodReferencial <> ""
-and c.CEPPTipoCEPP in ('P', 'A', 'R')
-group by c.stSetorId, o.ProdutoCodigo, o.RevestimentoId, c.EquipamentoId
+and c.CEPPTipoCEPP in ('P', 'R')
+group by c.OrdemProducaoId, c.stSetorId, o.ProdutoCodigo, o.RevestimentoId, c.EquipamentoId
 order by e.SetorId, c.CEPPDtInicio
 ;

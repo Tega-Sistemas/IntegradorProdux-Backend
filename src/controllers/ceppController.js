@@ -53,8 +53,8 @@ router.post('/', async (req, res) => {
                 OperadorNome,
                 CEPPProduxId,
                 OrdemProducaoCodReferencial,
-                OperacoesCeppId,
-                OperacoesCeppDescricao,
+                OperacoesCEPPId,
+                OperacoesCEPPDescricao,
                 stSetorId,
                 stSetorDescricao
             }
@@ -81,16 +81,24 @@ router.post('/', async (req, res) => {
             OperadorNome,
             OrdemProducaoId,
             OrdemProducaoCodReferencial,
-            OperacoesCeppId,
-            OperacoesCeppDescricao,
+            OperacoesCEPPId,
+            OperacoesCEPPDescricao,
             stSetorId,
             stSetorDescricao
         });
 
-        res.status(201).json(novoCEPP);
+        res.status(201).json({
+            isError: false,
+            message: 'CEPP inserido com sucesso',
+            CEPPErdId: novoCEPP.CEPPId
+        });
     } catch (error) {
-        console.error('Erro ao inserir CEPP:', error);
-        res.status(500).json({ error: 'Erro ao inserir CEPP' });
+        res.status(400).json({
+            isError: true,
+            message: 'Erro ao inserir CEPP:' + error,
+            CEPPErdId: 0
+        });
+        // res.status(500).json({ error: 'Erro ao inserir CEPP' });
     }
 });
 
@@ -112,7 +120,7 @@ router.patch('/:id', async (req, res) => {
             .patchAndFetchById(id, req.body);
 
 
-        return res.status(200).json({ message: 'CEPP atualizado com sucesso'});
+        return res.status(200).json({ message: 'CEPP atualizado com sucesso' });
     } catch (error) {
         console.error('Erro ao atualizar CEPP:', error);
         return res.status(500).json({ error: 'Erro ao atualizar CEPP' });

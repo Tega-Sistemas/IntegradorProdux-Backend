@@ -3,7 +3,7 @@ select
 	c.EmpresaId empresa_ciclopcp,
 	o.LoteProducaoId ordemproducao_ciclopcp,
 	0 loteproducao_ciclopcp,
-	c.stSetorId setor_ciclopcp,
+	c.OperacoesCEPPId setor_ciclopcp,
 	c.EquipamentoId postodetrabalho_ciclopcp,
 	c.OperadorId responsavel_ciclopcp,
 	date_format(o.OrdemProducaoDtProgramado, "%Y-%m-%d 00:00:00.000") dtprevista_ciclopcp,
@@ -51,7 +51,7 @@ select
 		from cepp aj
 		inner join motivoparada m on m.MotivoParadaId = aj.MotivoParadaId
 		where aj.CEPPTipoCEPP = 'A'
-		and m.MotivoParadaDescricao like '%SETUP%'
+		and m.MotivoParadaDescricao like '%REGULAGEM%'
 		and aj.OrdemProducaoId = c.OrdemProducaoId
 		and aj.EquipamentoId = c.EquipamentoId
 	) tempoajustesmaq_ciclopcp,
@@ -67,7 +67,7 @@ select
 		from cepp tp
 		inner join motivoparada m on m.MotivoParadaId = tp.MotivoParadaId
 		where tp.CEPPTipoCEPP = 'A'
-		and m.MotivoParadaDescricao not like '%SETUP%'
+		and m.MotivoParadaDescricao not like '%REGULAGEM%'
 		and tp.OrdemProducaoId = c.OrdemProducaoId
 		and tp.EquipamentoId = c.EquipamentoId
 	) tempointerrupcoes_ciclopcp,
@@ -86,8 +86,9 @@ from cepp c
 inner join ordemproducao o on o.OrdemProducaoId = c.OrdemProducaoId
 inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 where c.OrdemProducaoCodReferencial <> ""
--- and c.CEPPTipoCEPP in ('P')
-and c.CEPPSincronizado = 0
-group by c.OrdemProducaoId, c.EquipamentoId, e.SetorId
+and c.CEPPTipoCEPP = 'P'
+-- and c.CEPPSincronizado = 0
+and o.LoteProducaoId in (3613)
+group by o.LoteProducaoId, c.EquipamentoId, c.OperacoesCEPPId
 order by e.SetorId, c.CEPPDtInicio
 ;

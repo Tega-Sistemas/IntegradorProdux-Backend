@@ -11,6 +11,11 @@
       "raw": false
     },
     {
+      "column": "c.OrdemProducaoId",
+      "alias": "ordemproducao_id",
+      "raw": false
+    },
+    {
       "column": "c.EmpresaId",
       "alias": "empresa_apont",
       "raw": false
@@ -26,14 +31,14 @@
       "raw": true
     },
     {
-      "column": "c.OrdemProducaoId",
+      "column": "o.LoteProducaoId",
       "alias": "ordemproducao_apont",
       "raw": false
     },
     {
-      "column": "case when c.stSetorId = 0 then e.SetorId else c.stSetorId end",
+      "column": "c.OperacoesCEPPId",
       "alias": "setor_apont",
-      "raw": true
+      "raw": false
     },
     {
       "column": "0",
@@ -61,7 +66,7 @@
       "raw": true
     },
     {
-      "column": "case WHEN c.MotivoParadaId = 0 and c.CEPPTipoCEPP = 'A' then 0 WHEN m.MotivoParadaDescricao not like '%SETUP%' and c.CEPPTipoCEPP = 'R' then 1 WHEN m.MotivoParadaDescricao not like '%SETUP%' and c.CEPPTipoCEPP = 'A' then 2 WHEN m.MotivoParadaDescricao like '%SETUP%' and c.CEPPTipoCEPP = 'A' then 3 ELSE 0 end",
+      "column": "case WHEN c.CEPPTipoCEPP = 'R' then 1 when c.CEPPTipoCEPP = 'P' then 0 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 2 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 3 ELSE 0 end",
       "alias": "processo_apont",
       "raw": true
     },
@@ -101,7 +106,7 @@
       "raw": true
     },
     {
-      "column": "''",
+      "column": "case when c.CEPPTipoCEPP = 'R' then 'Retrabalho' when c.CEPPTipoCEPP = 'P' then 'Produção' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 'Parada' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 'Regulagem' else 'Produção' end",
       "alias": "observacao_apont",
       "raw": true
     },
@@ -123,11 +128,6 @@
     {
       "column": "time_format(sec_to_time(ROUND(timestampdiff(second, c.CEPPDtInicio, c.CEPPDtTermino))), '1899-12-30 %H:%i:%s')",
       "alias": "tempototal_apont",
-      "raw": true
-    },
-    {
-      "column": "0",
-      "alias": "auditoria_apont",
       "raw": true
     },
     {

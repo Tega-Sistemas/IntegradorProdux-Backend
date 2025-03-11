@@ -20,5 +20,5 @@ inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 inner join motivoparada m on m.MotivoParadaId = c.MotivoParadaId
 where c.OrdemProducaoCodReferencial <> ""
 and c.CEPPTipoCEPP in ('R', 'A')
-and m.MotivoParadaDescricao not like '%SETUP%'
+and m.MotivoParadaDescricao not like '%REGULAGEM%'
 ;

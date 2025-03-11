@@ -12,11 +12,12 @@ export const listarMotivosParada = async (req, res) => {
 
 // Criar um novo motivo de parada
 export const criarMotivoParada = async (req, res) => {
-    const { MotivoParadaDescricao, MotivoParadaEvitavel } = req.body;
+    const { MotivoParadaDescricao, MotivoParadaEvitavel, MotivoParadaInterrupcaoPrevista } = req.body;
     try {
         const novoMotivoParada = await MotivoParada.query().insert({
             MotivoParadaDescricao,
             MotivoParadaEvitavel,
+            MotivoParadaInterrupcaoPrevista,
         });
         res.status(201).json(novoMotivoParada);
     } catch (error) {
