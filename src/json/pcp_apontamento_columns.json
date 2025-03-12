@@ -76,7 +76,7 @@
       "raw": true
     },
     {
-      "column": "'N'",
+      "column": "case when m.MotivoParadaInterrupcaoPrevista is null then 'N' else m.MotivoParadaInterrupcaoPrevista end",
       "alias": "prevista_apont",
       "raw": true
     },
@@ -151,14 +151,14 @@
       "raw": true
     },
     {
-      "column": "c.OperadorNome",
+      "column": "substr(e.EquipamentoDescricao, 1, 20)",
       "alias": "usuarioinclusao_apont",
-      "raw": false
+      "raw": true
     },
     {
-      "column": "c.OperadorNome",
+      "column": "''",
       "alias": "usuarioalteracao_apont",
-      "raw": false
+      "raw": true
     }
   ]
 }

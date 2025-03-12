@@ -51,12 +51,12 @@
       "raw": true
     },
     {
-      "column": "case when c.OperadorNome = '' then e.OperadorNome else c.OperadorNome end",
+      "column": "substr(e.EquipamentoDescricao, 1, 20)",
       "alias": "usuarioinclusao_aptdet",
       "raw": true
     },
     {
-      "column": "case when c.OperadorNome = '' then e.OperadorNome else c.OperadorNome end",
+      "column": "''",
       "alias": "usuarioalteracao_aptdet",
       "raw": true
     }

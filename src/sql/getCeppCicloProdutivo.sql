@@ -10,15 +10,39 @@ select
 	date_format(c.CEPPDtInicio, "%Y-%m-%d 00:00:00.000") dtexecucao_ciclopcp,
 	0 sequencial_ciclopcp,
 	e.EquipamentoNroFuncionarios qtdepessoasequipe_ciclopcp,
-	CONCAT(
-	    '1899-12-30 ',
-	    DATE_FORMAT(min(c.CEPPDtInicio), '%H:%i:%s.'),
-	    LPAD(MICROSECOND(min(c.CEPPDtInicio)) DIV 1000, 3, '0')
+	-- 	CONCAT(
+-- 	    '1899-12-30 ',
+-- 	    DATE_FORMAT(min(c.CEPPDtInicio), '%H:%i:%s.'),
+-- 	    LPAD(MICROSECOND(min(c.CEPPDtInicio)) DIV 1000, 3, '0')
+-- 	) horario_inicio_ciclopcp,
+	(
+		select
+			CONCAT(
+			    '1899-12-30 ',
+			    DATE_FORMAT(min(hri.CEPPDtInicio), '%H:%i:%s.'),
+			    LPAD(MICROSECOND(min(hri.CEPPDtInicio)) DIV 1000, 3, '0')
+			)
+		from cepp hri
+		inner join ordemproducao ohri on ohri.OrdemProducaoId = hri.OrdemProducaoId
+		where ohri.LoteProducaoId = o.LoteProducaoId
+		and hri.EquipamentoId = c.EquipamentoId
 	) horario_inicio_ciclopcp,
-	CONCAT(
-	    '1899-12-30 ',
-	    DATE_FORMAT(max(c.CEPPDtTermino), '%H:%i:%s.'),
-	    LPAD(MICROSECOND(Max(c.CEPPDtTermino)) DIV 1000, 3, '0')
+-- 	CONCAT(
+-- 	    '1899-12-30 ',
+-- 	    DATE_FORMAT(max(c.CEPPDtTermino), '%H:%i:%s.'),
+-- 	    LPAD(MICROSECOND(Max(c.CEPPDtTermino)) DIV 1000, 3, '0')
+-- 	) horario_termino_ciclopcp,
+	(
+		select
+			CONCAT(
+			    '1899-12-30 ',
+			    DATE_FORMAT(max(hri.CEPPDtTermino), '%H:%i:%s.'),
+			    LPAD(MICROSECOND(max(hri.CEPPDtTermino)) DIV 1000, 3, '0')
+			)
+		from cepp hri
+		inner join ordemproducao ohri on ohri.OrdemProducaoId = hri.OrdemProducaoId
+		where ohri.LoteProducaoId = o.LoteProducaoId
+		and hri.EquipamentoId = c.EquipamentoId
 	) horario_termino_ciclopcp,
 	time_format(
 		sec_to_time(ROUND(timestampdiff(second, min(c.CEPPDtInicio), max(c.CEPPDtTermino)))),
@@ -77,18 +101,18 @@ select
 	'1899-12-30 00:00:00.000' tempoprevistoajuste_ciclopcp,
 	'1899-12-30 00:00:00.000' tempoprevistointerrup_ciclopcp,
 	42 formularateio_ciclopcp,
-	"" observacoes_ciclopcp,
+	"ORIGEM: PRODUX" observacoes_ciclopcp,
 	now() datahorainclusao_ciclopcp,
 	now() datahoraalteracao_ciclopcp,
-	c.OperadorNome usuarioinclusao_ciclopcp,
-	c.OperadorNome usuarioalteracao_ciclopcp
+	e.EquipamentoDescricao usuarioinclusao_ciclopcp,
+	"" usuarioalteracao_ciclopcp
 from cepp c
 inner join ordemproducao o on o.OrdemProducaoId = c.OrdemProducaoId
 inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 where c.OrdemProducaoCodReferencial <> ""
 and c.CEPPTipoCEPP = 'P'
--- and c.CEPPSincronizado = 0
-and o.LoteProducaoId in (3613)
+and c.CEPPSincronizado = 0
+and c.CEPPDtCadastro >= curdate()
 group by o.LoteProducaoId, c.EquipamentoId, c.OperacoesCEPPId
-order by e.SetorId, c.CEPPDtInicio
+order by o.LoteProducaoId, e.SetorId, c.CEPPDtInicio
 ;

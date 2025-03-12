@@ -8,7 +8,13 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const resultado = await realizarSincronizacao();
-    return res.status(200).json(resultado);
+
+    switch(resultado.status) {
+      case "error":
+        return res.status(400).json(resultado);
+      default:
+        return res.status(200).json(resultado);
+    }
   } catch (error) {
     console.error('Erro ao forçar sincronização:', error);
     return res.status(500).json({ message: 'Erro ao forçar sincronização', error: error.message });
