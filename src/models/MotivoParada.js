@@ -17,6 +17,7 @@ class MotivoParada extends Model {
                 MotivoParadaDescricao: { type: 'string', maxLength: 50 },
                 MotivoParadaEvitavel: { type: 'integer' },
                 MotivoParadaInterrupcaoPrevista: { type: 'string' },
+                MotivoParadaTpErpExterno: { type: 'string' },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
             },
