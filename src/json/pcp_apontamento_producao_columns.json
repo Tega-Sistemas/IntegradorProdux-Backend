@@ -1,0 +1,164 @@
+{
+  "columns": [
+    {
+      "column": "0",
+      "alias": "autoinc_apont",
+      "raw": true
+    },
+    {
+      "column": "c.CEPPId",
+      "alias": "cepp_id",
+      "raw": false
+    },
+    {
+      "column": "c.OrdemProducaoId",
+      "alias": "ordemproducao_id",
+      "raw": false
+    },
+    {
+      "column": "c.EmpresaId",
+      "alias": "empresa_apont",
+      "raw": false
+    },
+    {
+      "column": "c.CEPPDtCadastro",
+      "alias": "data_apont",
+      "raw": false
+    },
+    {
+      "column": "0",
+      "alias": "lote_apont",
+      "raw": true
+    },
+    {
+      "column": "o.LoteProducaoId",
+      "alias": "ordemproducao_apont",
+      "raw": false
+    },
+    {
+      "column": "c.OperacoesCEPPId",
+      "alias": "setor_apont",
+      "raw": false
+    },
+    {
+      "column": "0",
+      "alias": "setor_processo_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "setor_normal_apont",
+      "raw": true
+    },
+    {
+      "column": "c.EquipamentoId",
+      "alias": "postodetrabalho_apont",
+      "raw": false
+    },
+    {
+      "column": "c.OperadorId",
+      "alias": "responsavel_apont",
+      "raw": false
+    },
+    {
+      "column": "0",
+      "alias": "turno_apont",
+      "raw": true
+    },
+    {
+      "column": "case WHEN c.CEPPTipoCEPP = 'R' then 1 when c.CEPPTipoCEPP = 'P' then 0 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 2 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 3 ELSE 0 end",
+      "alias": "processo_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "fluxo_apont",
+      "raw": true
+    },
+    {
+      "column": "case when m.MotivoParadaInterrupcaoPrevista is null then 'N' else m.MotivoParadaInterrupcaoPrevista end",
+      "alias": "prevista_apont",
+      "raw": true
+    },
+    {
+      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else o.ProdutoCodigo end",
+      "alias": "item_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "variacao_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "acabamento_apont",
+      "raw": true
+    },
+    {
+      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else o.RevestimentoId end",
+      "alias": "cor_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "grade_apont",
+      "raw": true
+    },
+    {
+      "column": "case when c.CEPPTipoCEPP = 'R' then 'Retrabalho' when c.CEPPTipoCEPP = 'P' then 'Produção' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 'Parada' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 'Regulagem' else 'Produção' end",
+      "alias": "observacao_apont",
+      "raw": true
+    },
+    {
+      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else sum(c.CEPPQtdeProduzida) end",
+      "alias": "quantidade_apont",
+      "raw": true
+    },
+    {
+      "column": "CONCAT('1899-12-30 ', DATE_FORMAT(c.CEPPDtInicio, '%H:%i:%s.'), LPAD(MICROSECOND(min(c.CEPPDtInicio)) DIV 1000, 3, '0'))",
+      "alias": "horainicio_apont",
+      "raw": true
+    },
+    {
+      "column": "CONCAT('1899-12-30 ', DATE_FORMAT(c.CEPPDtTermino, '%H:%i:%s.'), LPAD(MICROSECOND(max(c.CEPPDtTermino)) DIV 1000, 3, '0'))",
+      "alias": "horafim_apont",
+      "raw": true
+    },
+    {
+      "column": "(select time_format(sec_to_time(Round(sum(cp.ceppminutocentesimal) * 60)), '1899-12-30 %H:%i:%s') from cepp cp inner join ordemproducao op on op.OrdemProducaoId = cp.OrdemProducaoId where cp.CEPPTipoCEPP = 'P') and op.LoteProducaoId = o.LoteProducaoId and cp.EquipamentoId = c.EquipamentoId and cp.OperacoesCEPPId = c.OperacoesCEPPId",
+      "alias": "tempototal_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "cicloprodutivo_apont",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "fatorrateiotempo_apont",
+      "raw": true
+    },
+    {
+      "column": "now()",
+      "alias": "datahorainclusao_apont",
+      "raw": true
+    },
+    {
+      "column": "now()",
+      "alias": "datahoraalteracao_apont",
+      "raw": true
+    },
+    {
+      "column": "substr(e.EquipamentoDescricao, 1, 20)",
+      "alias": "usuarioinclusao_apont",
+      "raw": true
+    },
+    {
+      "column": "''",
+      "alias": "usuarioalteracao_apont",
+      "raw": true
+    }
+  ]
+}

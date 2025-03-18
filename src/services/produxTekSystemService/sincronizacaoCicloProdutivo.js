@@ -39,12 +39,15 @@ async function sincronizar() {
   let urlExterna = "";
   let urlEndpoint = "";
   let sqlApontamento = "";
+  let sqlApontamentoProd = "";
   let sqlApontamentoDet = "";
   let colunasApontamento = "";
+  let colunasApontamentoProd = "";
   let colunasApontamentoDet = "";
   let url = "";
 
   sqlApontamento = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_columns.json'), 'utf-8'));
+  sqlApontamentoProd = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_producao_columns.json'), 'utf-8'));
   sqlApontamentoDet = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_det_columns.json'), 'utf-8'));
 
   try {
@@ -112,6 +115,14 @@ async function sincronizar() {
         }
       
 
+        colunasApontamentoProd = sqlApontamentoProd.columns.map(col => {
+          if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
+            return db.raw(`${col.column} as ${col.alias}`);
+          } else {
+            return `${col.column} as ${col.alias}`;
+          }
+        });
+
         colunasApontamento = sqlApontamento.columns.map(col => {
           if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
             return db.raw(`${col.column} as ${col.alias}`);
@@ -123,7 +134,7 @@ async function sincronizar() {
         sendLog('info', 'Buscando dados de apontamentos produtivos/retrabalho.')
 
         const apontamentos = await db('cepp as c')
-          .select(colunasApontamento)
+          .select(colunasApontamentoProd)
           .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
           .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
