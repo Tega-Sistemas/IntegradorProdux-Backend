@@ -66,7 +66,7 @@
       "raw": true
     },
     {
-      "column": "case WHEN c.CEPPTipoCEPP = 'R' then 1 when c.CEPPTipoCEPP = 'P' then 0 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 2 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 3 ELSE 0 end",
+      "column": "case WHEN c.CEPPTipoCEPP = 'R' then 1 when c.CEPPTipoCEPP = 'P' then 0 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno <> 'AJ' then 2 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno = 'AJ' then 3 ELSE 0 end",
       "alias": "processo_apont",
       "raw": true
     },
@@ -106,7 +106,7 @@
       "raw": true
     },
     {
-      "column": "case when c.CEPPTipoCEPP = 'R' then 'Retrabalho' when c.CEPPTipoCEPP = 'P' then 'Produção' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 'Parada' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 'Regulagem' else 'Produção' end",
+      "column": "case when c.CEPPTipoCEPP = 'R' then 'Retrabalho' when c.CEPPTipoCEPP = 'P' then 'Produção' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno <> 'AJ' then 'Parada' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno = 'AJ' then 'Regulagem' else 'Produção' end",
       "alias": "observacao_apont",
       "raw": true
     },

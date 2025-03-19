@@ -16,7 +16,7 @@
       "raw": true
     },
     {
-      "column": "c.MotivoParadaId",
+      "column": "m.MotivoParadaId",
       "alias": "motivo_falha_aptdet",
       "raw": false
     },

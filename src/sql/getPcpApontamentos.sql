@@ -15,8 +15,8 @@ select
 	case
 		WHEN c.CEPPTipoCEPP = 'R' then 1
 		when c.CEPPTipoCEPP = 'P' then 0
-		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 2
-		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 3
+		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErExterno <> 'AJ' then 2
+		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErExterno = 'AJ' then 3
 		ELSE 0
 	end processo_apont,
 	0 fluxo_apont,
@@ -36,12 +36,11 @@ select
 	end cor_apont,
 	0 grade_apont,
 	"" observacao_apont,
-	c.CEPPQtdeProduzida quantidade_apont,
 	case
 		when c.CEPPTipoCEPP = 'R' then 'Retrabalho'
 		when c.CEPPTipoCEPP = 'P' then 'Produção'
-		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao not like '%REGULAGEM%' then 'Parada'
-		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaDescricao like '%REGULAGEM%' then 'Regulagem'
+		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErExterno <> 'AJ' then 'Parada'
+		when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErExterno = 'AJ' then 'Regulagem'
 		else 'Produção'
 	end observacao_apont,
 	case
