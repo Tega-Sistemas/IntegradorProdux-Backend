@@ -41,14 +41,17 @@ async function sincronizar() {
   let sqlApontamento = "";
   let sqlApontamentoProd = "";
   let sqlApontamentoDet = "";
+  let sqlApontamentoRetDet = "";
   let colunasApontamento = "";
   let colunasApontamentoProd = "";
   let colunasApontamentoDet = "";
+  let colunasApontamentoRetDet = "";
   let url = "";
 
   sqlApontamento = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_columns.json'), 'utf-8'));
   sqlApontamentoProd = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_producao_columns.json'), 'utf-8'));
   sqlApontamentoDet = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_det_columns.json'), 'utf-8'));
+  sqlApontamentoRetDet = await JSON.parse(fs.readFileSync(getJsonColumnPath('pcp_apontamento_ret_det_columns.json'), 'utf-8'));
 
   try {
     sendLog('info', 'Buscando configuração de integração com ERP')
@@ -96,7 +99,6 @@ async function sincronizar() {
           return { status: 'error', message: `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'` };
         }
         cepp.loteproducao_ciclopcp = data.lote_op;
-
         if (cepp.responsavel_ciclopcp === 0 || cepp.responsavel_ciclopcp === "0" || cepp.responsavel_ciclopcp === undefined || cepp.responsavel_ciclopcp === 999997) {
           url = "";
           urlEndpoint = '/pcp_posto_de_trabalho'
@@ -114,7 +116,6 @@ async function sincronizar() {
           cepp.responsavel_ciclopcp = equip.responsavel_postotrab;
         }
       
-
         colunasApontamentoProd = sqlApontamentoProd.columns.map(col => {
           if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
             return db.raw(`${col.column} as ${col.alias}`);
@@ -134,7 +135,10 @@ async function sincronizar() {
         sendLog('info', 'Buscando dados de apontamentos produtivos/retrabalho.')
 
         const apontamentos = await db('cepp as c')
-          .select(colunasApontamentoProd)
+          .select([
+            ...colunasApontamento.filter(col => col !== "responsavel_apont"),
+            db.raw('? as "responsavel_apont"', [cepp.responsavel_ciclopcp])
+          ])
           .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
           .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
@@ -148,7 +152,10 @@ async function sincronizar() {
 
         sendLog('info', 'Buscando dados de apontamentos de parada')
         const apontamentosParada = await db('cepp as c')
-          .select(colunasApontamento)
+          .select([
+            ...colunasApontamento.filter(col => col !== "responsavel_apont"),
+            db.raw('? as "responsavel_apont"', [cepp.responsavel_ciclopcp])
+          ])
           .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
           .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
@@ -161,7 +168,10 @@ async function sincronizar() {
           .orderBy('c.CEPPDtInicio');
 
         const apontamentosRegulagem = await db('cepp as c')
-          .select(colunasApontamento)
+          .select([
+            ...colunasApontamento.filter(col => col !== "responsavel_apont"),
+            db.raw('? as "responsavel_apont"', [cepp.responsavel_ciclopcp])
+          ])
           .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
           .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
           .leftJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
@@ -192,30 +202,51 @@ async function sincronizar() {
               }
             });
 
+            colunasApontamentoRetDet = sqlApontamentoRetDet.columns.map(col => {
+              if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
+                return db.raw(`${col.column} as ${col.alias}`);
+              } else {
+                return `${col.column} as ${col.alias}`;
+              }
+            });
+
             apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
               try {
                 if (apontamento.processo_apont !== 0) {
                   const apontamentoDet = await db('cepp as c')
-                  .select(colunasApontamentoDet)
-                  .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
-                  .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
-                  .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
-                  .where('c.OrdemProducaoCodReferencial', '<>', '')
-                  .whereIn('c.CEPPTipoCEPP', ['A', 'R'])
-                  .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
-                  // .where('m.MotivoParadaTpErpExterno', 'AJ')
-                  .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
-                  .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
-                  .where('c.CEPPId', apontamento.cepp_id)
-                  .groupBy('c.CEPPId')
-                  .orderBy('e.SetorId')
-                  .orderBy('c.CEPPDtInicio');
-
+                    .select(colunasApontamentoDet)
+                    .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
+                    .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
+                    .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
+                    .where('c.OrdemProducaoCodReferencial', '<>', '')
+                    .whereIn('c.CEPPTipoCEPP', ['A', 'R'])
+                    .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
+                    .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
+                    .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
+                    .where('c.CEPPId', apontamento.cepp_id)
+                    .groupBy('c.CEPPId')
+                    .orderBy('e.SetorId')
+                    .orderBy('c.CEPPDtInicio');
+                  
                   apontamento.pcp_apontamento_det = apontamentoDet || [];
                   apontamento.lote_apont = cepp.loteproducao_ciclopcp || 0;
                   return apontamento;
                 } else {
-                  apontamento.pcp_apontamento_det = [];
+                  const apontamentoRet = await db('cepp as c')
+                      .select(colunasApontamentoRetDet)
+                      .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
+                      .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
+                      .innerJoin('motivoretrabalho as m', 'm.MotivoRetrabalhoId', 'c.MotivoRetrabalhoId')
+                      .where('c.OrdemProducaoCodReferencial', '<>', '')
+                      .whereIn('c.CEPPTipoCEPP', [ 'R'])
+                      .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
+                      .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
+                      .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
+                      .groupBy('c.CEPPId')
+                      .orderBy('e.SetorId')
+                      .orderBy('c.CEPPDtInicio');
+                      
+                  apontamento.pcp_apontamento_det = apontamentoRet || [];
                   return apontamento
                 }
               } catch (error) {

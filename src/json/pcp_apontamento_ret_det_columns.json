@@ -1,0 +1,64 @@
+{
+  "columns": [
+    {
+      "column": "0",
+      "alias": "autoinc_aptdet",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "ai_apont_aptdet",
+      "raw": true
+    },
+    {
+      "column": "case when c.CEPPTipoCEPP = 'R' then 0 when c.CEPPTipoCEPP = 'A' then 3 else 3 end",
+      "alias": "tipo_aptdet",
+      "raw": true
+    },
+    {
+      "column": "m.MotivoRetrabalhoId",
+      "alias": "motivo_falha_aptdet",
+      "raw": false
+    },
+    {
+      "column": "c.CEPPQtdeProduzida",
+      "alias": "quantidade_aptdet",
+      "raw": false
+    },
+    {
+      "column": "0",
+      "alias": "setor_ocor_aptdet",
+      "raw": true
+    },
+    {
+      "column": "0",
+      "alias": "valor_aptdet",
+      "raw": true
+    },
+    {
+      "column": "''",
+      "alias": "observacao_aptdet",
+      "raw": true
+    },
+    {
+      "column": "now()",
+      "alias": "datahorainclusao_aptdet",
+      "raw": true
+    },
+    {
+      "column": "now()",
+      "alias": "datahoraalteracao_aptdet",
+      "raw": true
+    },
+    {
+      "column": "substr(e.EquipamentoDescricao, 1, 20)",
+      "alias": "usuarioinclusao_aptdet",
+      "raw": true
+    },
+    {
+      "column": "''",
+      "alias": "usuarioalteracao_aptdet",
+      "raw": true
+    }
+  ]
+}
