@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cors({
   origin: '*',
 }));
-// app.use('/v1/me', verifyToken, getMe);
+app.use('/v1/me', verifyToken, getMe);
 app.use(validarApiKey);
 
 app.use('/', routes);
