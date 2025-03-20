@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-
 import Usuario from '../models/Usuario.js';
 
 export const login = async (req, res) => {
@@ -13,7 +12,11 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    console.log("Senha: ", password)
+    console.log("Senha Banco: ", usuario.senha)
     const isMatch = await bcrypt.compare(password, usuario.senha);
+
+    console.log('isMatch: ', isMatch)
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -26,7 +29,7 @@ export const login = async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: '1h'
+        expiresIn: '1h',
       }
     );
 
@@ -35,9 +38,9 @@ export const login = async (req, res) => {
     return res.json({ token, usuario: user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: 'Server error' });
   }
-}
+};
 
 export const getMe = async (req, res) => {
   const { id } = req.query;
@@ -45,14 +48,12 @@ export const getMe = async (req, res) => {
     if (!req.query) {
       return res.status(400).json({ message: 'Request with no params was sent.' });
     }
-    // Assuming 'req.user' contains user data after decoding the JWT token
     const usuario = await Usuario.query().findById(Number(id));
 
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario não encontrado' });
     }
 
-    // Return the user data (only what should be accessible from the auth layer)
     res.json({
       usuario: {
         id: usuario.id,
@@ -60,11 +61,32 @@ export const getMe = async (req, res) => {
         usuario: usuario.usuario,
         email: usuario.email,
         role: usuario.role,
-        // Include additional fields if necessary
-      }
+      },
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Busca o usuário pelo username
+    const usuario = await Usuario.query().where('usuario', username).first();
+
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    await Usuario.query().findById(usuario.id).patch({
+      senha: password,
+    });
+
+    res.status(200).json({ message: 'Senha alterada com sucesso'});
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error);
+    res.status(500).json({ message: 'Erro no servidor ao alterar senha' });
   }
 };
