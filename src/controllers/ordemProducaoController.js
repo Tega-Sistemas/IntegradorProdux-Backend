@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import OrdemProducao from "../models/OrdemProducao.js";
 
 // Listar todas as ordens de produção
@@ -71,3 +72,34 @@ export const deletarOrdemProducao = async (req, res) => {
         res.status(500).json({ error: "Erro ao deletar a ordem de produção." });
     }
 };
+
+export const getQtdeProgramada = async (req, res) => {
+    const currentDate = dayjs().format("YYYY-MM-DD");
+    try {
+        const qtdeProgramada = await OrdemProducao.query()
+            .select(OrdemProducao.raw("SUM(OrdemProducaoQtdeProgramada) AS total"))
+            .where("OrdemProducaoDtProgramado", currentDate)
+            .first();
+
+        const total = qtdeProgramada.total ? Number(qtdeProgramada.total) : 0;
+        res.status(200).json({ qtdeProgramda: total });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Erro ao buscar a quantidade programada." });
+    }
+};
+
+export const getQtdeOrdensProgramadas = async (req, res) => {
+    const currentDate = dayjs().format("YYYY-MM-DD");
+    try {
+        const totalOrdensProgramadas = await OrdemProducao.query()
+            .count("* as total")
+            .where("OrdemProducaoDtProgramado", currentDate)
+            .first();
+        const total = totalOrdensProgramadas ? Number(totalOrdensProgramadas.total) : 0;
+        res.status(200).json({ qtdeOrdensProgramadas: total });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Erro ao buscar a quantidade programada." });
+    }
+}
