@@ -5,6 +5,7 @@ import ConfiguracaoIntegracao from '../../models/ConfiguracaoIntegracao.js';
 import Cepp from '../../models/Cepp.js';
 import { logErro, logInfo, logSucesso } from '../logService.js';
 import db from '../../config/db.js';
+import { validarComandoSql } from '../../utils/validarSql.js';
 
 const getSqlFilePath = (relativePath) => {
   return path.join(process.cwd(),'src','sql', relativePath);
@@ -80,6 +81,12 @@ async function sincronizar() {
 
     const query = fs.readFileSync(getSqlFilePath('getCeppCicloProdutivo.sql'), 'utf8');
 
+    if (!validarComandoSql(query)) {
+      const log = 'O arquivo getCeppCicloProdutivo.sql contém comandos proibidos (ex.: UPDATE, DELETE, DROP). Execução abortada.';
+      sendLog('error', log);
+      return { status: 'error', message: log };
+    }
+
     const resultado = await db.raw(query);
 
     urlEndpoint = '/ordem_producao';
@@ -117,6 +124,12 @@ async function sincronizar() {
         }
       
         colunasApontamentoProd = sqlApontamentoProd.columns.map(col => {
+          const columnContent = col.column;
+          if (!validarComandoSql(columnContent)) {
+            const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoProd. Execução abortada.`;
+            sendLog('error', log);
+            throw new Error(log); // Lança erro pra parar o Promise.all
+          }
           if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
             return db.raw(`${col.column} as ${col.alias}`);
           } else {
@@ -125,6 +138,12 @@ async function sincronizar() {
         });
 
         colunasApontamento = sqlApontamento.columns.map(col => {
+          const columnContent = col.column;
+          if (!validarComandoSql(columnContent)) {
+            const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamento. Execução abortada.`;
+            sendLog('error', log);
+            throw new Error(log); // Lança erro pra parar o Promise.all
+          }
           if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
             return db.raw(`${col.column} as ${col.alias}`);
           } else {
@@ -136,7 +155,7 @@ async function sincronizar() {
 
         const apontamentos = await db('cepp as c')
           .select([
-            ...colunasApontamento.filter(col => col !== "responsavel_apont"),
+            ...colunasApontamentoProd.filter(col => col !== "responsavel_apont"),
             db.raw('? as "responsavel_apont"', [cepp.responsavel_ciclopcp])
           ])
           .innerJoin('ordemproducao as o', 'o.OrdemProducaoId', 'c.OrdemProducaoId')
@@ -195,6 +214,12 @@ async function sincronizar() {
           let apontamentoDetalhado;
           try {
             colunasApontamentoDet = sqlApontamentoDet.columns.map(col => {
+              const columnContent = col.column;
+              if (!validarComandoSql(columnContent)) {
+                const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoDet. Execução abortada.`;
+                sendLog('error', log);
+                throw new Error(log); // Lança erro pra parar o Promise.all
+              }
               if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
                 return db.raw(`${col.column} as ${col.alias}`);
               } else {
@@ -203,6 +228,12 @@ async function sincronizar() {
             });
 
             colunasApontamentoRetDet = sqlApontamentoRetDet.columns.map(col => {
+              const columnContent = col.column;
+              if (!validarComandoSql(columnContent)) {
+                const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoRetDet. Execução abortada.`;
+                sendLog('error', log);
+                throw new Error(log); // Lança erro pra parar o Promise.all
+              }
               if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
                 return db.raw(`${col.column} as ${col.alias}`);
               } else {
