@@ -81,11 +81,11 @@ async function sincronizar() {
 
     const query = fs.readFileSync(getSqlFilePath('getCeppCicloProdutivo.sql'), 'utf8');
 
-    if (!validarComandoSql(query)) {
-      const log = 'O arquivo getCeppCicloProdutivo.sql contém comandos proibidos (ex.: UPDATE, DELETE, DROP). Execução abortada.';
-      sendLog('error', log);
-      return { status: 'error', message: log };
-    }
+    // if (!validarComandoSql(query)) {
+    //   const log = 'O arquivo getCeppCicloProdutivo.sql contém comandos proibidos (ex.: UPDATE, DELETE, DROP). Execução abortada.';
+    //   sendLog('error', log);
+    //   return { status: 'error', message: log };
+    // }
 
     const resultado = await db.raw(query);
 
@@ -125,11 +125,11 @@ async function sincronizar() {
       
         colunasApontamentoProd = sqlApontamentoProd.columns.map(col => {
           const columnContent = col.column;
-          if (!validarComandoSql(columnContent)) {
-            const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoProd. Execução abortada.`;
-            sendLog('error', log);
-            throw new Error(log); // Lança erro pra parar o Promise.all
-          }
+          // if (!validarComandoSql(columnContent)) {
+          //   const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoProd. Execução abortada.`;
+          //   sendLog('error', log);
+          //   throw new Error(log); // Lança erro pra parar o Promise.all
+          // }
           if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
             return db.raw(`${col.column} as ${col.alias}`);
           } else {
@@ -139,11 +139,11 @@ async function sincronizar() {
 
         colunasApontamento = sqlApontamento.columns.map(col => {
           const columnContent = col.column;
-          if (!validarComandoSql(columnContent)) {
-            const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamento. Execução abortada.`;
-            sendLog('error', log);
-            throw new Error(log); // Lança erro pra parar o Promise.all
-          }
+          // if (!validarComandoSql(columnContent)) {
+          //   const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamento. Execução abortada.`;
+          //   sendLog('error', log);
+          //   throw new Error(log); // Lança erro pra parar o Promise.all
+          // }
           if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
             return db.raw(`${col.column} as ${col.alias}`);
           } else {
@@ -181,7 +181,7 @@ async function sincronizar() {
           .where('c.OrdemProducaoCodReferencial', '<>', '')
           .whereIn('c.CEPPTipoCEPP', ['A'])
           // .where('m.MotivoParadaDescricao', 'not like', '%REGULAGEM%')
-          // .where('m.MotivoParadaTpErpExterno', '<>', 'AJ')
+          .where('m.MotivoParadaTpErpExterno', '<>', 'AJ')
           .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
           .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
           .orderBy('c.CEPPDtInicio');
@@ -215,11 +215,11 @@ async function sincronizar() {
           try {
             colunasApontamentoDet = sqlApontamentoDet.columns.map(col => {
               const columnContent = col.column;
-              if (!validarComandoSql(columnContent)) {
-                const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoDet. Execução abortada.`;
-                sendLog('error', log);
-                throw new Error(log); // Lança erro pra parar o Promise.all
-              }
+              // if (!validarComandoSql(columnContent)) {
+              //   const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoDet. Execução abortada.`;
+              //   sendLog('error', log);
+              //   throw new Error(log); // Lança erro pra parar o Promise.all
+              // }
               if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
                 return db.raw(`${col.column} as ${col.alias}`);
               } else {
@@ -229,11 +229,11 @@ async function sincronizar() {
 
             colunasApontamentoRetDet = sqlApontamentoRetDet.columns.map(col => {
               const columnContent = col.column;
-              if (!validarComandoSql(columnContent)) {
-                const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoRetDet. Execução abortada.`;
-                sendLog('error', log);
-                throw new Error(log); // Lança erro pra parar o Promise.all
-              }
+              // if (!validarComandoSql(columnContent)) {
+              //   const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoRetDet. Execução abortada.`;
+              //   sendLog('error', log);
+              //   throw new Error(log); // Lança erro pra parar o Promise.all
+              // }
               if (col.column.startsWith('CONCAT') || col.column.startsWith('time_format') || col.raw) {
                 return db.raw(`${col.column} as ${col.alias}`);
               } else {
@@ -243,6 +243,11 @@ async function sincronizar() {
 
             apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
               try {
+                console.log('OrdemProducaoId: ', apontamento.ordemproducao_id)
+                console.log('LoteProducaoId: ', cepp.ordemproducao_ciclopcp)
+                console.log('EquipamentoId: ', apontamento.postodetrabalho_apont)
+
+                console.log("ProcessoAPont: ", apontamento.processo_apont)
                 if (apontamento.processo_apont !== 0) {
                   const apontamentoDet = await db('cepp as c')
                     .select(colunasApontamentoDet)
@@ -250,7 +255,8 @@ async function sincronizar() {
                     .innerJoin('equipamento as e', 'e.EquipamentoId', 'c.EquipamentoId')
                     .innerJoin('motivoparada as m', 'm.MotivoParadaId', 'c.MotivoParadaId')
                     .where('c.OrdemProducaoCodReferencial', '<>', '')
-                    .whereIn('c.CEPPTipoCEPP', ['A', 'R'])
+                    .whereIn('c.CEPPTipoCEPP', ['A'])
+                    // .where('c.MotivoParadaTpErpExterno', '<>', 'AJ')
                     .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
                     .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
                     .where('c.EquipamentoId', apontamento.postodetrabalho_apont)

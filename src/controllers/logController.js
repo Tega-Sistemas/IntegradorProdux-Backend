@@ -2,6 +2,7 @@ import { v4 as uuidv4, v4 } from 'uuid';
 import Log from '../models/Log.js';
 
 export const listarLogs = async (req, res) => {
+    console.log('Chamada')
     const { dataInicial, dataFinal, ordenacao, page, limit } = req.query;
 
     const offset = (page - 1) * limit;
@@ -20,13 +21,19 @@ export const listarLogs = async (req, res) => {
     const ordem = ordenacao || 'desc';
 
     try {
+        const totalResult = await Log.query()
+            .whereBetween('created_at', [dataInicial, dataFinal])
+            .count('* as total')
+            .first();
+
+        const total = parseInt(totalResult.total);
         const logs = await Log.query()
             .whereBetween('created_at', [dataInicial, dataFinal])
             .orderBy('created_at', ordem)
             .limit(limit)
             .offset(offset);
 
-        res.status(200).json(logs);
+        res.status(200).json({ logs, total });
     } catch (error) {
         res.status(500).json({ message: 'Erro ao listar logs', error });
     }
