@@ -243,11 +243,6 @@ async function sincronizar() {
 
             apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
               try {
-                console.log('OrdemProducaoId: ', apontamento.ordemproducao_id)
-                console.log('LoteProducaoId: ', cepp.ordemproducao_ciclopcp)
-                console.log('EquipamentoId: ', apontamento.postodetrabalho_apont)
-
-                console.log("ProcessoAPont: ", apontamento.processo_apont)
                 if (apontamento.processo_apont !== 0) {
                   const apontamentoDet = await db('cepp as c')
                     .select(colunasApontamentoDet)

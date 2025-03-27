@@ -14,6 +14,7 @@ class Consulta extends Model {
 
             properties: {
                 id: { type: 'integer' },
+                nome_metadata: { type: 'string', minLength: 1, maxLength: 255 },
                 nome_tabela: { type: 'string', minLength: 1, maxLength: 255 },
                 nome_modelo: { type: 'string', minLength: 1, maxLength: 255 },
                 nome_arquivo: { type: 'string', minLength: 1, maxLength: 255 },

@@ -3,7 +3,7 @@ import { validarComandoSql } from '../utils/validarSql.js'; // Importa a funçã
 
 export const listarConsultas = async (req, res) => {
   try {
-    const consultaList = await Consulta.query().select().orderBy('nome_tabela');
+    const consultaList = await Consulta.query().select();
     res.status(200).json(consultaList);
   } catch (error) {
     console.error('Erro ao listar Consultas:', error);
@@ -14,6 +14,7 @@ export const listarConsultas = async (req, res) => {
 export const criarConsulta = async (req, res) => {
   try {
     const {
+      nome_metadata,
       nome_tabela,
       nome_modelo,
       nome_arquivo,
@@ -33,6 +34,7 @@ export const criarConsulta = async (req, res) => {
     }
 
     const novaConsulta = await Consulta.query().insert({
+      nome_metadata,
       nome_tabela,
       nome_modelo,
       nome_arquivo,
@@ -57,6 +59,7 @@ export const updateConsulta = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      nome_metadata,
       nome_tabela,
       nome_modelo,
       nome_arquivo,
@@ -82,6 +85,7 @@ export const updateConsulta = async (req, res) => {
     const consultaAtualizada = await Consulta.query()
       .findById(id)
       .patch({
+        nome_metadata,
         nome_tabela,
         nome_modelo,
         nome_arquivo,
@@ -106,3 +110,32 @@ export const updateConsulta = async (req, res) => {
     res.status(500).json({ error: 'Erro ao atualizar Consulta' });
   }
 };
+
+export const toggleActive = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { active } = req.body;
+
+    const consulta = await Consulta.query().findById(id);
+    if (!consulta) {
+      return res.status(404).json({ error: 'Consulta não encontrada' });
+    }
+
+    const consultaAtualizada = await Consulta.query()
+      .findById(id)
+      .patch({
+        active,
+      });
+    
+    if (!consultaAtualizada) {
+      return res.status(400).json({ message: 'Erro ao atualizar Consulta' });
+    }
+
+    res.status(200).json({
+      message: 'Consulta atualizada com sucesso!',
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar status da Consulta' })
+  }
+}

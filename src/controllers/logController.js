@@ -2,7 +2,6 @@ import { v4 as uuidv4, v4 } from 'uuid';
 import Log from '../models/Log.js';
 
 export const listarLogs = async (req, res) => {
-    console.log('Chamada')
     const { dataInicial, dataFinal, ordenacao, page, limit } = req.query;
 
     const offset = (page - 1) * limit;

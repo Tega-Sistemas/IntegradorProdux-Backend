@@ -84,7 +84,6 @@ export const getQtdeProgramada = async (req, res) => {
         const total = qtdeProgramada.total ? Number(qtdeProgramada.total) : 0;
         res.status(200).json({ qtdeProgramda: total });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: "Erro ao buscar a quantidade programada." });
     }
 };
@@ -99,7 +98,6 @@ export const getQtdeOrdensProgramadas = async (req, res) => {
         const total = totalOrdensProgramadas ? Number(totalOrdensProgramadas.total) : 0;
         res.status(200).json({ qtdeOrdensProgramadas: total });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: "Erro ao buscar a quantidade programada." });
     }
 }

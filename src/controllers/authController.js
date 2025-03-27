@@ -12,11 +12,8 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    console.log("Senha: ", password)
-    console.log("Senha Banco: ", usuario.senha)
     const isMatch = await bcrypt.compare(password, usuario.senha);
 
-    console.log('isMatch: ', isMatch)
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
