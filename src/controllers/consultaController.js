@@ -43,7 +43,7 @@ export const criarConsulta = async (req, res) => {
       usuario_alteracao,
       filtros_colunas: filtros_colunas ? JSON.stringify(filtros_colunas) : '',
       formatar_valores: formatar_valores ? JSON.stringify(formatar_valores) : '',
-      update_on_duplicate: update_on_duplicate,
+      update_on_duplicate: update_on_duplicate === 1 ? true : false,
       expandir_ordem: expandir_ordem ? JSON.stringify(expandir_ordem) : '',
       colunas_duplicidade: colunas_duplicidade ? JSON.stringify(colunas_duplicidade) : '',
     });
@@ -93,7 +93,7 @@ export const updateConsulta = async (req, res) => {
         usuario_alteracao,
         filtros_colunas: filtros_colunas ? JSON.stringify(filtros_colunas) : '',
         formatar_valores: formatar_valores ? JSON.stringify(formatar_valores) : '',
-        update_on_duplicate: update_on_duplicate,
+        update_on_duplicate: update_on_duplicate === 1 ? true : false,
         expandir_ordem: expandir_ordem ? JSON.stringify(expandir_ordem) : '',
         colunas_duplicidade: colunas_duplicidade ? JSON.stringify(colunas_duplicidade) : '',
       });
