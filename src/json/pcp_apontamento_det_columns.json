@@ -1,6 +1,11 @@
 {
   "columns": [
     {
+      "column": "c.CEPPId",
+      "alias": "cepp_id",
+      "raw": false
+    },
+    {
       "column": "0",
       "alias": "autoinc_aptdet",
       "raw": true

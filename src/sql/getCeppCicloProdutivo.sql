@@ -1,4 +1,5 @@
 select
+	c.CEPPId ceppid,
 	0 codigo_ciclopcp,
 	c.EmpresaId empresa_ciclopcp,
 	o.LoteProducaoId ordemproducao_ciclopcp,
@@ -112,7 +113,7 @@ inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 where c.OrdemProducaoCodReferencial <> ""
 and c.CEPPTipoCEPP = 'P'
 and c.CEPPSincronizado = 0
--- and o.LoteProducaoId = 3573
+-- and o.LoteProducaoId = 3249
 -- and c.CEPPDtCadastro >= curdate()
 group by o.LoteProducaoId, c.EquipamentoId, c.OperacoesCEPPId
 order by o.LoteProducaoId, e.SetorId, c.CEPPDtInicio

@@ -6,6 +6,7 @@ import Cepp from '../../models/Cepp.js';
 import { logErro, logInfo, logSucesso } from '../logService.js';
 import db from '../../config/db.js';
 import { validarComandoSql } from '../../utils/validarSql.js';
+import { log } from 'console';
 
 const getSqlFilePath = (relativePath) => {
   return path.join(process.cwd(),'src','sql', relativePath);
@@ -36,7 +37,8 @@ const sendLog = (tipo, message) => {
 
 async function sincronizar() {
   const syncName = 'CEPP - Ciclo Produtivo';
-  const batchSize = 20;
+  const ceppsAtualizar = new Set();
+  const batchSize = 10;
   let urlExterna = "";
   let urlEndpoint = "";
   let sqlApontamento = "";
@@ -75,9 +77,9 @@ async function sincronizar() {
     }
 
     sendLog('info', 'Buscando registros de ciclo produtivo a serem sincronizados.')
-    const ceppsAtualizar = await Cepp.query()
-      .where('CEPPSincronizado', false)
-      .where('OrdemProducaoCodReferencial', '<>', '');
+    // const ceppsAtualizar = await Cepp.query()
+    //   .where('CEPPSincronizado', false)
+    //   .where('OrdemProducaoCodReferencial', '<>', '');
 
     const query = fs.readFileSync(getSqlFilePath('getCeppCicloProdutivo.sql'), 'utf8');
 
@@ -93,6 +95,7 @@ async function sincronizar() {
     
     sendLog('info', 'Buscando dados de apontamento e apontamento_det para os ciclos produtivos.')
     const cicloProdutivo = await Promise.all(resultado[0].map(async (cepp) => {
+      console.log('***********************************************************')
       try {
         url = `${urlExterna}${urlEndpoint}/${cepp.ordemproducao_ciclopcp}`;
         const { data } = await axios.get(url,{
@@ -105,22 +108,27 @@ async function sincronizar() {
           sendLog('error', `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'`)
           return { status: 'error', message: `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'` };
         }
-        cepp.loteproducao_ciclopcp = data.lote_op;
+        cepp.loteproducao_ciclopcp = data.lote_op ? data.lote_op : 999999;
         if (cepp.responsavel_ciclopcp === 0 || cepp.responsavel_ciclopcp === "0" || cepp.responsavel_ciclopcp === undefined || cepp.responsavel_ciclopcp === 999997) {
-          url = "";
-          urlEndpoint = '/pcp_posto_de_trabalho'
-          url = `${urlExterna}${urlEndpoint}/${cepp.postodetrabalho_ciclopcp}`;
-          const { data: equip } = await axios.get(url,{
-            headers: {
-              'X_API_KEY': api_key
-            }
-          });
+          try {
+            url = "";
+            urlEndpoint = '/pcp_posto_de_trabalho'
+            url = `${urlExterna}${urlEndpoint}/${cepp.postodetrabalho_ciclopcp}`;
+            const { data: equip } = await axios.get(url,{
+              headers: {
+                'X_API_KEY': api_key
+              }
+            });
 
-          if (!equip) {
+            if (!equip) { 
+              sendLog('error', `Erro na busca do equipamento '${cepp.postodetrabalho_ciclopcp}'`)
+              return { status: 'error', message: `Erro na busca do equipamento '${cepp.postodetrabalho_ciclopcp}'` };
+            }
+            cepp.responsavel_ciclopcp = equip.responsavel_postotrab ? equip.responsavel_postotrab : 999999;
+
+          } catch (error) {
             sendLog('error', `Erro na busca do equipamento '${cepp.postodetrabalho_ciclopcp}'`)
-            return { status: 'error', message: `Erro na busca do equipamento '${cepp.postodetrabalho_ciclopcp}'` };
           }
-          cepp.responsavel_ciclopcp = equip.responsavel_postotrab;
         }
       
         colunasApontamentoProd = sqlApontamentoProd.columns.map(col => {
@@ -153,6 +161,7 @@ async function sincronizar() {
 
         sendLog('info', 'Buscando dados de apontamentos produtivos/retrabalho.')
 
+        console.log('Buscando Apontamentos')  
         const apontamentos = await db('cepp as c')
           .select([
             ...colunasApontamentoProd.filter(col => col !== "responsavel_apont"),
@@ -170,6 +179,7 @@ async function sincronizar() {
           .orderBy('c.CEPPDtInicio');
 
         sendLog('info', 'Buscando dados de apontamentos de parada')
+        console.log('Buscando ApontamentosParada')  
         const apontamentosParada = await db('cepp as c')
           .select([
             ...colunasApontamento.filter(col => col !== "responsavel_apont"),
@@ -185,7 +195,8 @@ async function sincronizar() {
           .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
           .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
           .orderBy('c.CEPPDtInicio');
-
+        
+        console.log('Buscando ApontamentosRegulagem')  
         const apontamentosRegulagem = await db('cepp as c')
           .select([
             ...colunasApontamento.filter(col => col !== "responsavel_apont"),
@@ -214,7 +225,7 @@ async function sincronizar() {
           let apontamentoDetalhado;
           try {
             colunasApontamentoDet = sqlApontamentoDet.columns.map(col => {
-              const columnContent = col.column;
+              // const columnContent = col.column;
               // if (!validarComandoSql(columnContent)) {
               //   const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoDet. Execução abortada.`;
               //   sendLog('error', log);
@@ -228,7 +239,7 @@ async function sincronizar() {
             });
 
             colunasApontamentoRetDet = sqlApontamentoRetDet.columns.map(col => {
-              const columnContent = col.column;
+              // const columnContent = col.column;
               // if (!validarComandoSql(columnContent)) {
               //   const log = `Comando proibido encontrado na coluna '${columnContent}' de sqlApontamentoRetDet. Execução abortada.`;
               //   sendLog('error', log);
@@ -241,6 +252,7 @@ async function sincronizar() {
               }
             });
 
+            console.log('Buscando ApontamentosDetalhados')  
             apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
               try {
                 if (apontamento.processo_apont !== 0) {
@@ -294,7 +306,7 @@ async function sincronizar() {
 
       } catch (error) {
         sendLog('error', `Erro na requisição. Error: ${error}`)
-        return { status: 'error', message: `Exceção na busca dos apontamentos do ciclo. Error: ${error}` };
+        throw { status: 'error', message: `Exceção na busca dos apontamentos do ciclo. Error: ${error.message}` };
       }
       return { pcp_ciclo_produtivo: { ...cepp } };
     }));
@@ -310,32 +322,48 @@ async function sincronizar() {
       }
       url = "";
       urlEndpoint = "";
-      urlEndpoint = '/pcp_ciclo_completo'
+      urlEndpoint = '/pcp_ciclo_completo/'
       url = `${urlExterna}${urlEndpoint}`;
       for (const batch of batches) {
         try {
-          const { data } = await axios.post(url, batch, {
+          const response = await axios.post(url, batch, {
             headers: {
               'X_API_KEY': api_key
             }
           });
 
-          // if (data.status !== 'success') {
-          //   sendLog('error', `Falha ao enviar batch: ${JSON.stringify(batch)}`)
-          //   return { status: 'error', message: `Falha ao enviar batch: ${JSON.stringify(batch)}`}
-          // }
+
+          if (response.status !== 200) {
+            sendLog('error', `Falha ao enviar batch: ${JSON.stringify(batch)}`)
+            return { status: 'error', message: `Falha ao enviar batch: ${JSON.stringify(batch)}`}
+          }
+
+          batch.map((cepp) => {
+            ceppsAtualizar.add(cepp.pcp_ciclo_produtivo.ceppid);
+
+            cepp.pcp_ciclo_produtivo.pcp_apontamento.map((apontamento) => {
+              ceppsAtualizar.add(apontamento.cepp_id);
+
+              apontamento.pcp_apontamento_det.map((apontamentoDet) => {
+                ceppsAtualizar.add(apontamentoDet.cepp_id)
+              })
+            })
+          });
 
         } catch (error) {
-          
-          // sendLog('error', `Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})`);
-          return { status: 'error', message: `Erro ao enviar batch: (message: ${error})` };
+          sendLog('error', `Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})`);
+          return { status: 'error', message: `Erro ao enviar batch: (message: ${error.message})` };
         }
       }
+
+      const ceppsAtualizarArray = [...ceppsAtualizar]
       
       sendLog('info', `Atualizando cepps sincronizados.`);
-      await Cepp.query()
-        .whereIn('CEPPId', ceppsAtualizar.map(cepp => cepp.CEPPId))
-        .patch({ CEPPSincronizado: true });
+      if (ceppsAtualizarArray.length > 0) {
+        await Cepp.query()
+          .whereIn('CEPPId', ceppsAtualizarArray)
+          .patch({ CEPPSincronizado: true });
+      }
 
       sendLog('success', `Sincronização concluída com sucesso.`);
       return { status: 'success', message: 'Sincronização concluída com sucesso.' };
@@ -347,7 +375,7 @@ async function sincronizar() {
   } catch (error) {
     // console.error(error);
     sendLog('error', `Erro geral na sincronização de ${syncName} (message: ${error.message})`);
-    return { status: 'error', message: `Erro na sincronização de ${syncName}. Verifique os logs.` };
+    return { status: 'error', message: `Erro na sincronização de ${syncName}. Verifique os logs. Error: ${error.message}` };
   }
 }
 
