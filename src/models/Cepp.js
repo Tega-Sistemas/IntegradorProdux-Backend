@@ -25,6 +25,7 @@ class CEPP extends Model {
                 CEPPQtdeSobra: { type: 'integer' },
                 CEPPTipoCEPP: { type: 'string', maxLength: 50 },
                 CEPPOperacaoId: { type: 'integer'},
+                CEPPOrdemAgrupadora: { type: 'integer' },
                 EmpresaId: { type: 'integer' },
                 EquipamentoId: { type: 'integer' },
                 MotivoParadaDescricao: { type: 'string', maxLength: 255 },
@@ -40,6 +41,8 @@ class CEPP extends Model {
                 OperacoesCEPPDescricao: { type: 'string', maxLength: 50 },
                 stSetorId: { type: 'integer' },
                 stSetorDescricao: { type: 'string', maxLength: 50 },
+                TurnoProdutivoDiaSemana: { type: 'integer' },
+                TurnoProdutivoTurno: { type: 'integer' },
             },
         };
     }

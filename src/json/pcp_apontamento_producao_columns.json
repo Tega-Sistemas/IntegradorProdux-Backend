@@ -66,7 +66,7 @@
       "raw": true
     },
     {
-      "column": "case WHEN c.CEPPTipoCEPP = 'R' then 1 when c.CEPPTipoCEPP = 'P' then 0 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno <> 'AJ' then 2 when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno = 'AJ' then 3 ELSE 0 end",
+      "column": "0",
       "alias": "processo_apont",
       "raw": true
     },
@@ -81,9 +81,9 @@
       "raw": true
     },
     {
-      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else o.ProdutoCodigo end",
+      "column": "o.ProdutoCodigo",
       "alias": "item_apont",
-      "raw": true
+      "raw": false
     },
     {
       "column": "0",
@@ -96,9 +96,9 @@
       "raw": true
     },
     {
-      "column": "case when c.CEPPTipoCEPP = 'A' then 0 else o.RevestimentoId end",
+      "column": "o.RevestimentoId",
       "alias": "cor_apont",
-      "raw": true
+      "raw": false
     },
     {
       "column": "0",
@@ -106,7 +106,7 @@
       "raw": true
     },
     {
-      "column": "case when c.CEPPTipoCEPP = 'R' then 'Retrabalho' when c.CEPPTipoCEPP = 'P' then 'Produção' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno <> 'AJ' then 'Parada' when c.CEPPTipoCEPP = 'A' and m.MotivoParadaTpErpExterno = 'AJ' then 'Regulagem' else 'Produção' end",
+      "column": "'Produção'",
       "alias": "observacao_apont",
       "raw": true
     },
@@ -126,7 +126,7 @@
       "raw": true
     },
     {
-      "column": "(select time_format(sec_to_time(ROUND(sum(timestampdiff(second, cp.CEPPDtInicio, cp.CEPPDtTermino)))), '1899-12-30 %H:%i:%s') from cepp cp inner join ordemproducao op on op.OrdemProducaoId = cp.OrdemProducaoId where cp.CEPPTipoCEPP = 'P' and op.LoteProducaoId = o.LoteProducaoId and cp.EquipamentoId = c.EquipamentoId and cp.OperacoesCEPPId = c.OperacoesCEPPId)",
+      "column": "COALESCE(CONCAT('1899-12-30 ',TIME_FORMAT(SEC_TO_TIME(ROUND(SUM(c.ceppminutocentesimal) * 60)), '%H:%i:%s')),'1899-12-30 00:00:00')",
       "alias": "tempototal_apont",
       "raw": true
     },

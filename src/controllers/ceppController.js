@@ -49,6 +49,7 @@ router.post('/', async (req, res) => {
                 CEPPQtdeProduzida,
                 CEPPQtdePerda,
                 CEPPQtdeSobra,
+                CEPPOrdemAgrupadora,
                 OperadorId,
                 OperadorNome,
                 CEPPProduxId,
@@ -56,7 +57,9 @@ router.post('/', async (req, res) => {
                 OperacoesCEPPId,
                 OperacoesCEPPDescricao,
                 stSetorId,
-                stSetorDescricao
+                stSetorDescricao,
+                TurnoProdutivoDiaSemana,
+                TurnoProdutivoTurno
             }
         } = req.body;
 
@@ -71,6 +74,7 @@ router.post('/', async (req, res) => {
             CEPPQtdeProduzida,
             CEPPQtdeSobra,
             CEPPTipoCEPP,
+            CEPPOrdemAgrupadora,
             EmpresaId,
             EquipamentoId,
             MotivoParadaDescricao,
@@ -85,7 +89,9 @@ router.post('/', async (req, res) => {
             OperacoesCEPPId,
             OperacoesCEPPDescricao,
             stSetorId,
-            stSetorDescricao
+            stSetorDescricao,
+            TurnoProdutivoDiaSemana,
+            TurnoProdutivoTurno
         });
 
         res.status(201).json({

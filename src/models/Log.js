@@ -16,7 +16,7 @@ class Log extends Model {
             properties: {
                 id: { type: 'string', format: 'uuid' },  // Define o formato como UUID
                 level: { type: 'string' },
-                message: { type: 'string' },
+                message: { type: 'string',  maxLength: 4294967295  },
                 created_at: { type: 'string', format: 'date-time' }
             }
         };

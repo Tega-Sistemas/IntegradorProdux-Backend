@@ -22,7 +22,7 @@ export default {
       database: process.env.DB_NAME || 'integrador_produx',
     },
     migrations: {
-      directory: '../data/migrations',
+      directory: path.resolve(rootPath, 'src/data/migrations'),
       stub: './knex-stub.mjs',
     },
     seeds: {

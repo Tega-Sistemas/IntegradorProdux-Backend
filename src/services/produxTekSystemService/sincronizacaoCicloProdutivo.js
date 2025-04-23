@@ -95,7 +95,6 @@ async function sincronizar() {
     
     sendLog('info', 'Buscando dados de apontamento e apontamento_det para os ciclos produtivos.')
     const cicloProdutivo = await Promise.all(resultado[0].map(async (cepp) => {
-      console.log('***********************************************************')
       try {
         url = `${urlExterna}${urlEndpoint}/${cepp.ordemproducao_ciclopcp}`;
         const { data } = await axios.get(url,{
@@ -161,7 +160,6 @@ async function sincronizar() {
 
         sendLog('info', 'Buscando dados de apontamentos produtivos/retrabalho.')
 
-        console.log('Buscando Apontamentos')  
         const apontamentos = await db('cepp as c')
           .select([
             ...colunasApontamentoProd.filter(col => col !== "responsavel_apont"),
@@ -175,11 +173,14 @@ async function sincronizar() {
           .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
           .andWhere('c.OperacoesCEPPId', cepp.setor_ciclopcp)
           .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
+          .andWhere('c.CEPPDtInicio', '>=', cepp.dtexecucao_ciclopcp)
+          .andWhere('c.CEPPDtInicio', '<=', cepp.dttermino_ciclopcp)
+          .groupBy('c.OrdemProducaoId')
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
 
         sendLog('info', 'Buscando dados de apontamentos de parada')
-        console.log('Buscando ApontamentosParada')  
+
         const apontamentosParada = await db('cepp as c')
           .select([
             ...colunasApontamento.filter(col => col !== "responsavel_apont"),
@@ -194,9 +195,11 @@ async function sincronizar() {
           .where('m.MotivoParadaTpErpExterno', '<>', 'AJ')
           .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
           .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
+          .andWhere('c.CEPPDtInicio', '>=', cepp.dtexecucao_ciclopcp)
+          .andWhere('c.CEPPDtInicio', '<=', cepp.dttermino_ciclopcp)
+          .groupBy('c.CEPPId')
           .orderBy('c.CEPPDtInicio');
         
-        console.log('Buscando ApontamentosRegulagem')  
         const apontamentosRegulagem = await db('cepp as c')
           .select([
             ...colunasApontamento.filter(col => col !== "responsavel_apont"),
@@ -210,13 +213,16 @@ async function sincronizar() {
           .where('m.MotivoParadaTpErpExterno', 'AJ')
           .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
           .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
+          .andWhere('c.CEPPDtInicio', '>=', cepp.dtexecucao_ciclopcp)
+          .andWhere('c.CEPPDtInicio', '<=', cepp.dttermino_ciclopcp)
+          .groupBy('c.CEPPId')
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
 
-        const newApontamentos = [
-          ...apontamentos,
-          ...apontamentosParada,
-          ...apontamentosRegulagem
+          const newApontamentos = [
+          ...apontamentos.filter(ap => ap.cepp_id !== null && ap.cepp_id !== undefined),
+          ...apontamentosParada.filter(ap => ap.cepp_id !== null && ap.cepp_id !== undefined),
+          ...apontamentosRegulagem.filter(ap => ap.cepp_id !== null && ap.cepp_id !== undefined)
         ];
 
         sendLog('info', 'Buscando dados de apontamento_det.')
@@ -252,7 +258,6 @@ async function sincronizar() {
               }
             });
 
-            console.log('Buscando ApontamentosDetalhados')  
             apontamentoDetalhado = await Promise.all(newApontamentos.map(async (apontamento) => {
               try {
                 if (apontamento.processo_apont !== 0) {
@@ -268,6 +273,8 @@ async function sincronizar() {
                     .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
                     .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
                     .where('c.CEPPId', apontamento.cepp_id)
+                    .andWhere('c.CEPPDtInicio', '>=', cepp.dtexecucao_ciclopcp)
+                    .andWhere('c.CEPPDtInicio', '<=', cepp.dttermino_ciclopcp)
                     .groupBy('c.CEPPId')
                     .orderBy('e.SetorId')
                     .orderBy('c.CEPPDtInicio');
@@ -286,11 +293,14 @@ async function sincronizar() {
                       .andWhere('o.LoteProducaoId', cepp.ordemproducao_ciclopcp)
                       .where('c.OrdemProducaoId', apontamento.ordemproducao_id)
                       .where('c.EquipamentoId', apontamento.postodetrabalho_apont)
+                      .andWhere('c.CEPPDtInicio', '>=', cepp.dtexecucao_ciclopcp)
+                      .andWhere('c.CEPPDtInicio', '<=', cepp.dttermino_ciclopcp)
                       .groupBy('c.CEPPId')
                       .orderBy('e.SetorId')
                       .orderBy('c.CEPPDtInicio');
                       
                   apontamento.pcp_apontamento_det = apontamentoRet || [];
+                  apontamento.lote_apont = cepp.loteproducao_ciclopcp || 0;
                   return apontamento
                 }
               } catch (error) {
@@ -311,9 +321,9 @@ async function sincronizar() {
       return { pcp_ciclo_produtivo: { ...cepp } };
     }));
 
-    // return {
-    //    status: 'teste', message: `teste`, cicloProdutivo
-    // }
+    return {
+       status: 'teste', message: `teste`, cicloProdutivo
+    }
     if (cicloProdutivo.length > 0) {
       const batches = [];
 
@@ -363,6 +373,8 @@ async function sincronizar() {
         await Cepp.query()
           .whereIn('CEPPId', ceppsAtualizarArray)
           .patch({ CEPPSincronizado: true });
+
+        sendLog('info', `CEPPs atualizados: ${JSON.stringify(ceppsAtualizarArray)}`);
       }
 
       sendLog('success', `Sincronização concluída com sucesso.`);
