@@ -3,7 +3,7 @@ select
 	0 codigo_ciclopcp,
 	c.EmpresaId empresa_ciclopcp,
 	o.LoteProducaoId ordemproducao_ciclopcp,
-	0 loteproducao_ciclopcp,
+	o.LoteProducaoERPId loteproducao_ciclopcp,
 	c.OperacoesCEPPId setor_ciclopcp,
 	c.EquipamentoId postodetrabalho_ciclopcp,
 	c.OperadorId responsavel_ciclopcp,
