@@ -13,6 +13,7 @@ class OrdemProducao extends Model {
             properties: {
                 OrdemProducaoId: { type: "number" },
                 LoteProducaoId: { type: "number" },
+                LoteProducaoERPId: { type: "number" },
                 OrdemProducaoDtLote: { type: "string", format: "date" },
                 ProdutoCodigo: { type: "string", maxLength: 20 },
                 OrdemProducaoCodReferencial: { type: "string", maxLength: 100 },

@@ -58,6 +58,7 @@ router.post('/', async (req, res) => {
                 OperacoesCEPPDescricao,
                 stSetorId,
                 stSetorDescricao,
+                stSetorBuscarTempoIniFin,
                 TurnoProdutivoDiaSemana,
                 TurnoProdutivoTurno
             }
@@ -90,6 +91,7 @@ router.post('/', async (req, res) => {
             OperacoesCEPPDescricao,
             stSetorId,
             stSetorDescricao,
+            stSetorBuscarTempoIniFin,
             TurnoProdutivoDiaSemana,
             TurnoProdutivoTurno
         });

@@ -96,18 +96,20 @@ async function sincronizar() {
     sendLog('info', 'Buscando dados de apontamento e apontamento_det para os ciclos produtivos.')
     const cicloProdutivo = await Promise.all(resultado[0].map(async (cepp) => {
       try {
-        url = `${urlExterna}${urlEndpoint}/${cepp.ordemproducao_ciclopcp}`;
-        const { data } = await axios.get(url,{
-          headers: {
-            'X_API_KEY': api_key
-          }
-        });
+        if (cepp.loteproducao_ciclopcp === 0 || cepp.loteproducao_ciclopcp === undefined) {
+          url = `${urlExterna}${urlEndpoint}/${cepp.ordemproducao_ciclopcp}`;
+          const { data } = await axios.get(url,{
+            headers: {
+              'X_API_KEY': api_key
+            }
+          });
 
-        if (!data) {
-          sendLog('error', `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'`)
-          return { status: 'error', message: `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'` };
+          if (!data) {
+            sendLog('error', `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'`)
+            return { status: 'error', message: `Erro na busca do lote de produção para a ordem '${cepp.ordemproducao_ciclopcp}'` };
+          }
+          cepp.loteproducao_ciclopcp = data.lote_op;
         }
-        cepp.loteproducao_ciclopcp = data.lote_op ? data.lote_op : 999999;
         if (cepp.responsavel_ciclopcp === 0 || cepp.responsavel_ciclopcp === "0" || cepp.responsavel_ciclopcp === undefined || cepp.responsavel_ciclopcp === 999997) {
           try {
             url = "";

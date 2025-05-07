@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "generate-migration": "npx knex migrate:make --knexfile src/config/knexfile.js --env development",
+    "rollback": "npx knex migrate:rollback --knexfile src/config/knexfile.js --env development",
     "atualizadb": "npx knex migrate:latest --knexfile src/config/knexfile.js --env development"
   },
   "dependencies": {

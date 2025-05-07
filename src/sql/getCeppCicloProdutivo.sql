@@ -46,7 +46,10 @@ select
 	) tempo_total_ciclopcp,
 	case
 		when c.CEPPOrdemAgrupadora is not null and c.CEPPOrdemAgrupado > 0
-		then sec_to_time(ROUND(timestampdiff(second, min(c.CEPPDtInicio), max(c.CEPPDtTermino))))
+		then time_format(
+			sec_to_time(ROUND(timestampdiff(second, min(c.CEPPDtInicio), max(c.CEPPDtTermino)))),
+			"1899-12-30 %H:%i:%s"
+		)
 		else time_format(
 			sec_to_time(Round(sum(ceppminutocentesimal) * 60)), "1899-12-30 %H:%i:%s"
 		)

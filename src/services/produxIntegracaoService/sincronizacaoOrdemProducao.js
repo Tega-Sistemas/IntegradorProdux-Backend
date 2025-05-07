@@ -45,6 +45,7 @@ async function sincronizar() {
                 .select(
                     'OrdemProducaoId',
                     'LoteProducaoId',
+                    'LoteProducaoERPId',
                     'OrdemProducaoDtLote',
                     'ProdutoCodigo',
                     'ProdutoNomeAbreviado',

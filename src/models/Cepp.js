@@ -41,6 +41,7 @@ class CEPP extends Model {
                 OperacoesCEPPDescricao: { type: 'string', maxLength: 50 },
                 stSetorId: { type: 'integer' },
                 stSetorDescricao: { type: 'string', maxLength: 50 },
+                stSetorBuscarTempoIniFin: { type: 'boolean' },
                 TurnoProdutivoDiaSemana: { type: 'integer' },
                 TurnoProdutivoTurno: { type: 'integer' },
             },
