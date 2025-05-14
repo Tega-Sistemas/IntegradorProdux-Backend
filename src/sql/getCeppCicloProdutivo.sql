@@ -1,12 +1,12 @@
 select
-	c.CEPPId ceppid,
+	min(c.CEPPId) ceppid,
 	0 codigo_ciclopcp,
 	c.EmpresaId empresa_ciclopcp,
 	o.LoteProducaoId ordemproducao_ciclopcp,
 	o.LoteProducaoERPId loteproducao_ciclopcp,
 	c.OperacoesCEPPId setor_ciclopcp,
 	c.EquipamentoId postodetrabalho_ciclopcp,
-	c.OperadorId responsavel_ciclopcp,
+	e.ResponsavelId responsavel_ciclopcp,
 	date_format(o.OrdemProducaoDtProgramado, "%Y-%m-%d 00:00:00.000") dtprevista_ciclopcp,
 	date_format(c.CEPPDtInicio, "%Y-%m-%d 00:00:00.000") dtexecucao_ciclopcp,
 	date_format(c.CEPPDtInicio, "%Y-%m-%d 23:59:59.999") dttermino_ciclopcp,
@@ -45,7 +45,12 @@ select
 		"1899-12-30 %H:%i:%s"
 	) tempo_total_ciclopcp,
 	case
-		when c.CEPPOrdemAgrupadora is not null and c.CEPPOrdemAgrupado > 0
+		when c.stSetorBuscarTempoIniFin = 1
+			then time_format(
+				sec_to_time(ROUND(timestampdiff(second, min(c.CEPPDtInicio), max(c.CEPPDtTermino)))),
+				"1899-12-30 %H:%i:%s"
+			)
+		when c.CEPPOrdemAgrupadora is not null and c.CEPPOrdemAgrupadora > 0
 		then time_format(
 			sec_to_time(ROUND(timestampdiff(second, min(c.CEPPDtInicio), max(c.CEPPDtTermino)))),
 			"1899-12-30 %H:%i:%s"
@@ -126,8 +131,9 @@ inner join equipamento e on e.EquipamentoId = c.EquipamentoId
 where c.OrdemProducaoCodReferencial <> ""
 and c.CEPPTipoCEPP = 'P'
 and c.CEPPSincronizado = 0
--- and o.LoteProducaoId = 3743
--- and c.CEPPDtCadastro >= curdate()
+-- and o.LoteProducaoId = 3781
+-- and c.EquipamentoId = 1
+and c.CEPPDtCadastro < curdate()
 group by o.LoteProducaoId, c.EquipamentoId, c.OperacoesCEPPId, year(c.CEPPDtInicio), month(c.CEPPDtInicio), day(c.CEPPDtInicio)
 order by o.LoteProducaoId, e.SetorId, c.CEPPDtInicio
 ;

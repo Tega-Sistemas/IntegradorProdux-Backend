@@ -1,12 +1,10 @@
+import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
-import ConfiguracaoIntegracao from '../../models/ConfiguracaoIntegracao.js';
-import Cepp from '../../models/Cepp.js';
-import { logErro, logInfo, logSucesso } from '../logService.js';
 import db from '../../config/db.js';
-import { validarComandoSql } from '../../utils/validarSql.js';
-import { log } from 'console';
+import Cepp from '../../models/Cepp.js';
+import ConfiguracaoIntegracao from '../../models/ConfiguracaoIntegracao.js';
+import { logErro, logInfo } from '../logService.js';
 
 const getSqlFilePath = (relativePath) => {
   return path.join(process.cwd(),'src','sql', relativePath);
@@ -177,7 +175,7 @@ async function sincronizar() {
           .andWhere('c.EquipamentoId', cepp.postodetrabalho_ciclopcp)
           .andWhere('c.CEPPDtInicio', '>=', cepp.dtexecucao_ciclopcp)
           .andWhere('c.CEPPDtInicio', '<=', cepp.dttermino_ciclopcp)
-          .groupBy('c.OrdemProducaoId')
+          .groupBy('c.CEPPId')
           .orderBy('e.SetorId')
           .orderBy('c.CEPPDtInicio');
 
@@ -323,9 +321,9 @@ async function sincronizar() {
       return { pcp_ciclo_produtivo: { ...cepp } };
     }));
 
-    return {
-       status: 'teste', message: `teste`, cicloProdutivo
-    }
+    // return {
+    //   status: 'teste', message: `teste`, cicloProdutivo
+    // }
     if (cicloProdutivo.length > 0) {
       const batches = [];
 
@@ -362,21 +360,26 @@ async function sincronizar() {
             })
           });
 
+
+          const ceppsAtualizarArray = [...ceppsAtualizar]
+      
+          sendLog('info', `Atualizando cepps sincronizados.`);
+          if (ceppsAtualizarArray.length > 0) {
+            await Cepp.query()
+              .whereIn('CEPPId', ceppsAtualizarArray)
+              .patch({ CEPPSincronizado: true });
+
+            sendLog('info', `CEPPs atualizados: ${JSON.stringify(ceppsAtualizarArray)}`);
+          }
+
+          ceppsAtualizar.clear()
+          ceppsAtualizarArray.length = 0
+
         } catch (error) {
           sendLog('error', `Erro ao enviar batch: ${JSON.stringify(batch)} (message: ${error.message})`);
-          return { status: 'error', message: `Erro ao enviar batch: (message: ${error.message})` };
+          continue
+          // return { status: 'error', message: `Erro ao enviar batch: (message: ${error.message})` };
         }
-      }
-
-      const ceppsAtualizarArray = [...ceppsAtualizar]
-      
-      sendLog('info', `Atualizando cepps sincronizados.`);
-      if (ceppsAtualizarArray.length > 0) {
-        await Cepp.query()
-          .whereIn('CEPPId', ceppsAtualizarArray)
-          .patch({ CEPPSincronizado: true });
-
-        sendLog('info', `CEPPs atualizados: ${JSON.stringify(ceppsAtualizarArray)}`);
       }
 
       sendLog('success', `Sincronização concluída com sucesso.`);
@@ -394,3 +397,4 @@ async function sincronizar() {
 }
 
 export { sincronizar };
+

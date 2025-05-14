@@ -1,7 +1,7 @@
 import { Model } from 'objection';
-import Setor from './Setor.js';
 import Empresa from './Empresa.js';
 import Operacoes from './Operacoes.js';
+import Setor from './Setor.js';
 
 class Equipamento extends Model {
     static tableName = 'equipamento';
@@ -18,6 +18,7 @@ class Equipamento extends Model {
                 UnidadeSigla: { type: 'string', maxLength: 3 },
                 SetorId: { type: 'integer' },
                 EmpresaId: { type: 'integer' },
+                ResponsavelId: { type: 'integer' },
                 OperadorNome: { type: 'string', maxLength: 50 },
                 created_at: { type: 'string', format: 'date-time' },
                 updated_at: { type: 'string', format: 'date-time' },
